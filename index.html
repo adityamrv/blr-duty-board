@@ -16,14 +16,14 @@
 /* Layout: one-column airside ops card for a phone — controls on top, next BA up front, departures table below. */
 :root{
   --bg:#0C141F; --surface:#131E2D; --ink:#E5EBF2; --muted:#8B9AAC; --line:#22324A;
-  --accent:#F09A3E; --accent-soft:#2E2114; --warn:#F07A50;
+  --accent:#F09A3E; --accent-soft:#2E2114; --warn:#F07A50; --warn-soft:#3A1912;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:dark;
 }
 @media (prefers-color-scheme: light){:root{
   --bg:#EDF0F3; --surface:#FFFFFF; --ink:#132033; --muted:#5A6A7D; --line:#D4DBE3;
-  --accent:#D9771A; --accent-soft:#FBEBDA; --warn:#B4441C; color-scheme:light}}
+  --accent:#D9771A; --accent-soft:#FBEBDA; --warn:#B4441C; --warn-soft:#FBE3DA; color-scheme:light}}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg);margin:0}
@@ -31,6 +31,7 @@ body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;
   padding-top:max(14px,env(safe-area-inset-top,0px));padding-bottom:max(28px,env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 [hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
@@ -70,9 +71,19 @@ td.no,td.t{white-space:nowrap}
 td.ba{font-family:var(--display);font-weight:700;font-size:1.2rem;white-space:nowrap;text-align:right}
 th.ba{text-align:right}
 .plus{font-size:.7rem;color:var(--muted);margin-left:3px}
-tr.past td{color:var(--muted);background-image:linear-gradient(var(--muted),var(--muted));background-size:100% 1.5px;background-position:0 50%;background-repeat:no-repeat}
-tr.nextrow td{background:var(--accent-soft)}
-tr.nextrow td.ba{color:var(--accent)}
+td.chk{width:1%;padding-right:0}
+.tick{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:transparent;display:grid;place-items:center;padding:0;color:transparent}
+.tick svg{width:16px;height:16px}
+tr.done td{color:var(--muted);background-image:linear-gradient(var(--muted),var(--muted));background-size:100% 1.5px;background-position:0 50%;background-repeat:no-repeat}
+tr.done td.chk{background-image:none}
+tr.done .tick{background:var(--muted);border-color:var(--muted);color:var(--bg)}
+tr.nextrow td,tr.due td{background-color:var(--accent-soft)}
+tr.nextrow td.ba,tr.due td.ba{color:var(--accent)}
+tr.due .tick{border-color:var(--accent)}
+tr.overdue td{background-color:var(--warn-soft)}
+tr.overdue td.ba,tr.overdue .city{color:var(--warn)}
+tr.overdue .tick{border-color:var(--warn)}
+.alert{background:var(--warn-soft);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-weight:600;font-size:.9rem}
 
 .empty{padding:22px 16px;text-align:center;color:var(--muted)}
 .note{font-size:.8rem;color:var(--muted)}
@@ -92,13 +103,14 @@ tr.nextrow td.ba{color:var(--accent)}
   <div class="seg" id="days" role="group" aria-label="Day the shift starts"></div>
   <div class="seg" id="shifts" role="group" aria-label="Shift"></div>
 
+  <div class="alert" id="alert" hidden></div>
   <div class="next" id="next" hidden></div>
   <div class="summary" id="summary"></div>
 
   <div class="tablebox">
     <table>
-      <thead><tr><th>To</th><th>Flight</th><th>STD</th><th class="ba">BA</th></tr></thead>
-      <tbody id="rows"><tr><td colspan="4" class="empty">Flights for your shift will appear here once the data loads.</td></tr></tbody>
+      <thead><tr><th><span class="sr">Done</span></th><th>To</th><th>Flight</th><th>STD</th><th class="ba">BA</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="5" class="empty">Flights for your shift will appear here once the data loads.</td></tr></tbody>
     </table>
   </div>
   <div class="note" id="status"></div>
@@ -107,7 +119,17 @@ tr.nextrow td.ba{color:var(--accent)}
 
 <script>
 (function(){
-  const IST_MS = 330*60000, BA_MS = 75*60000, STALE_MS = 8*3600000;
+  const IST_MS = 330*60000, BA_MS = 75*60000, STALE_MS = 8*3600000, OVERDUE_MS = 15*60000;
+  // ticked-off BA tests, kept on this phone only
+  let doneMap = {};
+  try{ doneMap = JSON.parse(localStorage.getItem("baDone")||"{}")||{}; }catch(e){ doneMap = {}; }
+  function saveDone(){
+    const cutoff = Date.now()-4*86400000;
+    Object.keys(doneMap).forEach(k=>{ if(doneMap[k]<cutoff) delete doneMap[k]; });
+    try{ localStorage.setItem("baDone", JSON.stringify(doneMap)); }catch(e){}
+  }
+  const fKey = f => isoDate(f.stdMs)+"|"+f.no+"|"+f.std;
+  const isDone = f => !!doneMap[fKey(f)];
   const SHIFTS = [
     {id:"morning",   name:"Morning",   s:"06:30", e:"15:00"},
     {id:"afternoon", name:"Afternoon", s:"13:30", e:"22:00"},
@@ -176,17 +198,26 @@ tr.nextrow td.ba{color:var(--accent)}
     renderControls();
     const win=shiftWindow(state.dayOff,state.shift), {out,gaps,missing}=flightsFor(win), now=nowMs();
     const rows=$("rows"); rows.textContent="";
-    const nextUp=out.find(f=>f.baMs>=now);
-    const emptyRow=t=>{ const tr=document.createElement("tr"), td=document.createElement("td"); td.colSpan=4; td.className="empty"; td.textContent=t; tr.appendChild(td); rows.appendChild(tr); };
+    const nextUp=out.find(f=>f.baMs>=now && !isDone(f));
+    const overdue=out.filter(f=>!isDone(f) && now>f.baMs+OVERDUE_MS);
+    const emptyRow=t=>{ const tr=document.createElement("tr"), td=document.createElement("td"); td.colSpan=5; td.className="empty"; td.textContent=t; tr.appendChild(td); rows.appendChild(tr); };
 
     if(!state.loaded) emptyRow("Loading flight data…");
     else if(missing.length && !out.length) emptyRow("No flight data yet for "+missing.map(dayLabel).join(" and ")+". Tap Refresh, or check again after the next update.");
     else if(!out.length) emptyRow("No Akasa departures in this shift.");
     else out.forEach(f=>{
-      const tr=document.createElement("tr");
-      if(f.baMs<now) tr.className="past";
-      if(f===nextUp) tr.className="nextrow";
+      const tr=document.createElement("tr"), done=isDone(f);
+      if(done) tr.className="done";
+      else if(now>f.baMs+OVERDUE_MS) tr.className="overdue";
+      else if(now>=f.baMs) tr.className="due";
+      else if(f===nextUp) tr.className="nextrow";
       const td=(cls)=>{ const c=document.createElement("td"); c.className=cls; tr.appendChild(c); return c; };
+      const b=document.createElement("button"); b.type="button"; b.className="tick";
+      b.setAttribute("aria-pressed",String(done));
+      b.setAttribute("aria-label",(done?"Undo BA done for ":"Mark BA done for ")+f.no);
+      b.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      b.addEventListener("click",()=>{ const k=fKey(f); if(doneMap[k]) delete doneMap[k]; else doneMap[k]=Date.now(); saveDone(); render(); });
+      td("chk").appendChild(b);
       const to=td("to"); const city=document.createElement("span"); city.className="city"; city.textContent=f.to;
       const code=document.createElement("span"); code.className="code"; code.textContent=f.code; to.append(city,code);
       td("no").textContent=f.no;
@@ -207,12 +238,19 @@ tr.nextrow td.ba{color:var(--accent)}
       nb.append(left,right);
     } else if(state.loaded && out.length && !nextUp){
       nb.hidden=false; nb.className="next done";
-      nb.innerHTML='<div><div class="k">Shift status</div><div class="what">All BA tests for this shift are past.</div></div>';
+      const allDone=out.every(isDone);
+      nb.innerHTML='<div><div class="k">Shift status</div><div class="what"></div></div>';
+      nb.querySelector(".what").textContent = allDone ? "All BA tests for this shift are ticked off." : "No more BA tests due in this shift.";
     } else nb.hidden=true;
+    const al=$("alert");
+    if(state.loaded && overdue.length){
+      al.hidden=false;
+      al.textContent="Not ticked off: "+overdue.map(f=>f.no+" (BA "+hhmm(f.baMs)+")").join(", ");
+    } else al.hidden=true;
 
     if(out.length){
-      const left=out.filter(f=>f.baMs>=now).length;
-      $("summary").textContent=out.length+" flights · BA "+hhmm(out[0].baMs)+"–"+hhmm(out[out.length-1].baMs)+(left&&left<out.length?" · "+left+" still to come":"");
+      const left=out.filter(f=>!isDone(f)).length;
+      $("summary").textContent=out.length+" flights · BA "+hhmm(out[0].baMs)+"–"+hhmm(out[out.length-1].baMs)+(left<out.length?" · "+(out.length-left)+" ticked off":"");
     } else $("summary").textContent="";
 
     const st=$("status");
