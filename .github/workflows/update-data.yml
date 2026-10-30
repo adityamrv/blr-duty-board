@@ -1,0 +1,37 @@
+name: Update flight data
+
+on:
+  schedule:
+    # every 3 hours, at minute 17 (UTC). India time: 02:47, 05:47, 08:47, 11:47, 14:47, 17:47, 20:47, 23:47
+    - cron: "17 */3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch Akasa BLR departures
+        run: python3 tools/fetch_days.py data.json
+      - name: Commit if changed
+        run: |
+          git config user.name "duty-board-bot"
+          git config user.email "duty-board-bot@users.noreply.github.com"
+          git add data.json
+          if git diff --cached --quiet; then
+            echo "No change"
+          else
+            git commit -m "Update flight data"
+            git push
+          fi
