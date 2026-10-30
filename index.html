@@ -77,13 +77,10 @@ td.chk{width:1%;padding-right:0}
 tr.done td{color:var(--muted);background-image:linear-gradient(var(--muted),var(--muted));background-size:100% 1.5px;background-position:0 50%;background-repeat:no-repeat}
 tr.done td.chk{background-image:none}
 tr.done .tick{background:var(--muted);border-color:var(--muted);color:var(--bg)}
-tr.nextrow td,tr.due td{background-color:var(--accent-soft)}
-tr.nextrow td.ba,tr.due td.ba{color:var(--accent)}
-tr.due .tick{border-color:var(--accent)}
-tr.overdue td{background-color:var(--warn-soft)}
-tr.overdue td.ba,tr.overdue .city{color:var(--warn)}
-tr.overdue .tick{border-color:var(--warn)}
-.alert{background:var(--warn-soft);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-weight:600;font-size:.9rem}
+tr.nextrow td{background-color:var(--accent-soft)}
+tr.nextrow td.ba{color:var(--accent)}
+td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
+.tick[disabled]{cursor:default}
 
 .empty{padding:22px 16px;text-align:center;color:var(--muted)}
 .note{font-size:.8rem;color:var(--muted)}
@@ -103,7 +100,6 @@ tr.overdue .tick{border-color:var(--warn)}
   <div class="seg" id="days" role="group" aria-label="Day the shift starts"></div>
   <div class="seg" id="shifts" role="group" aria-label="Shift"></div>
 
-  <div class="alert" id="alert" hidden></div>
   <div class="next" id="next" hidden></div>
   <div class="summary" id="summary"></div>
 
@@ -129,7 +125,8 @@ tr.overdue .tick{border-color:var(--warn)}
     try{ localStorage.setItem("baDone", JSON.stringify(doneMap)); }catch(e){}
   }
   const fKey = f => isoDate(f.stdMs)+"|"+f.no+"|"+f.std;
-  const isDone = f => !!doneMap[fKey(f)];
+  const departed = f => Date.now() >= f.stdMs;
+  const isDone = f => departed(f) || !!doneMap[fKey(f)];
   const SHIFTS = [
     {id:"morning",   name:"Morning",   s:"06:30", e:"15:00"},
     {id:"afternoon", name:"Afternoon", s:"13:30", e:"22:00"},
@@ -199,7 +196,6 @@ tr.overdue .tick{border-color:var(--warn)}
     const win=shiftWindow(state.dayOff,state.shift), {out,gaps,missing}=flightsFor(win), now=nowMs();
     const rows=$("rows"); rows.textContent="";
     const nextUp=out.find(f=>f.baMs>=now && !isDone(f));
-    const overdue=out.filter(f=>!isDone(f) && now>f.baMs+OVERDUE_MS);
     const emptyRow=t=>{ const tr=document.createElement("tr"), td=document.createElement("td"); td.colSpan=5; td.className="empty"; td.textContent=t; tr.appendChild(td); rows.appendChild(tr); };
 
     if(!state.loaded) emptyRow("Loading flight data…");
@@ -208,13 +204,12 @@ tr.overdue .tick{border-color:var(--warn)}
     else out.forEach(f=>{
       const tr=document.createElement("tr"), done=isDone(f);
       if(done) tr.className="done";
-      else if(now>f.baMs+OVERDUE_MS) tr.className="overdue";
-      else if(now>=f.baMs) tr.className="due";
       else if(f===nextUp) tr.className="nextrow";
       const td=(cls)=>{ const c=document.createElement("td"); c.className=cls; tr.appendChild(c); return c; };
       const b=document.createElement("button"); b.type="button"; b.className="tick";
       b.setAttribute("aria-pressed",String(done));
-      b.setAttribute("aria-label",(done?"Undo BA done for ":"Mark BA done for ")+f.no);
+      b.setAttribute("aria-label",(departed(f)?"Departed: ":done?"Undo BA done for ":"Mark BA done for ")+f.no);
+      if(departed(f)) b.disabled=true;
       b.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       b.addEventListener("click",()=>{ const k=fKey(f); if(doneMap[k]) delete doneMap[k]; else doneMap[k]=Date.now(); saveDone(); render(); });
       td("chk").appendChild(b);
@@ -222,7 +217,8 @@ tr.overdue .tick{border-color:var(--warn)}
       const code=document.createElement("span"); code.className="code"; code.textContent=f.code; to.append(city,code);
       td("no").textContent=f.no;
       const t=td("t"); t.textContent=f.std; if(f.plus){const s=document.createElement("span");s.className="plus";s.textContent="+1";t.appendChild(s);}
-      td("ba").textContent=hhmm(f.baMs);
+      const bac=td("ba"); bac.textContent=hhmm(f.baMs);
+      if(!done && now>f.baMs+OVERDUE_MS) bac.classList.add("late");
       rows.appendChild(tr);
     });
 
@@ -240,17 +236,13 @@ tr.overdue .tick{border-color:var(--warn)}
       nb.hidden=false; nb.className="next done";
       const allDone=out.every(isDone);
       nb.innerHTML='<div><div class="k">Shift status</div><div class="what"></div></div>';
-      nb.querySelector(".what").textContent = allDone ? "All BA tests for this shift are ticked off." : "No more BA tests due in this shift.";
+      nb.querySelector(".what").textContent = allDone ? "All flights in this shift are done." : "No more BA tests due in this shift.";
     } else nb.hidden=true;
-    const al=$("alert");
-    if(state.loaded && overdue.length){
-      al.hidden=false;
-      al.textContent="Not ticked off: "+overdue.map(f=>f.no+" (BA "+hhmm(f.baMs)+")").join(", ");
-    } else al.hidden=true;
+
 
     if(out.length){
       const left=out.filter(f=>!isDone(f)).length;
-      $("summary").textContent=out.length+" flights · BA "+hhmm(out[0].baMs)+"–"+hhmm(out[out.length-1].baMs)+(left<out.length?" · "+(out.length-left)+" ticked off":"");
+      $("summary").textContent=out.length+" flights · BA "+hhmm(out[0].baMs)+"–"+hhmm(out[out.length-1].baMs)+(left<out.length?" · "+(out.length-left)+" done":"");
     } else $("summary").textContent="";
 
     const st=$("status");
