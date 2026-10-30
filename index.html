@@ -285,7 +285,15 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   document.addEventListener("visibilitychange",()=>{
     if(document.visibilityState==="visible"){ const p=autoPick(); state.dayOff=p.dayOff; state.shift=p.shift; load(false); }
   });
-  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if("serviceWorker" in navigator){
+    // when a new version of the app is installed, switch to it straight away
+    let reloading=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloading) return; reloading=true; location.reload(); });
+    navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{
+      reg.update().catch(()=>{});
+      document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); });
+    }).catch(()=>{});
+  }
 })();
 </script>
 </body>
