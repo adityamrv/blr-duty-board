@@ -62,25 +62,26 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .tablebox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-th{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
-td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:10px 6px;border-bottom:1px solid var(--line)}
+td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th:first-child,td:first-child{padding-left:10px}
+th:last-child,td:last-child{padding-right:12px}
 tr:last-child td{border-bottom:0}
 td.to .city{font-weight:600}
-td.to .code{color:var(--muted);font-size:.8rem;margin-left:4px}
+td.to .city{display:block;line-height:1.2}
+td.to .code{display:block;color:var(--muted);font-size:.75rem;letter-spacing:.04em}
 td.no,td.t{white-space:nowrap}
-td.ba{font-family:var(--display);font-weight:700;font-size:1.2rem;white-space:nowrap;text-align:right}
+td.ba{font-family:var(--display);font-weight:700;font-size:1.15rem;white-space:nowrap;text-align:right}
 th.ba{text-align:right}
 .plus{font-size:.7rem;color:var(--muted);margin-left:3px}
-td.chk{width:1%;padding-right:0}
-.tick{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:transparent;display:grid;place-items:center;padding:0;color:transparent}
-.tick svg{width:16px;height:16px}
+tbody tr.tap{cursor:pointer;-webkit-tap-highlight-color:transparent}
+tbody tr.tap:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 tr.done td{color:var(--muted);background-image:linear-gradient(var(--muted),var(--muted));background-size:100% 1.5px;background-position:0 50%;background-repeat:no-repeat}
-tr.done td.chk{background-image:none}
-tr.done .tick{background:var(--muted);border-color:var(--muted);color:var(--bg)}
 tr.nextrow td{background-color:var(--accent-soft)}
 tr.nextrow td.ba{color:var(--accent)}
 td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
-.tick[disabled]{cursor:default}
+.next .in{white-space:nowrap;font-size:1.15rem}
+@media (max-width:380px){.seg .lbl{font-size:.95rem}}
 
 .empty{padding:22px 16px;text-align:center;color:var(--muted)}
 .note{font-size:.8rem;color:var(--muted)}
@@ -105,11 +106,12 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 
   <div class="tablebox">
     <table>
-      <thead><tr><th><span class="sr">Done</span></th><th>To</th><th>Flight</th><th>STD</th><th class="ba">BA</th></tr></thead>
-      <tbody id="rows"><tr><td colspan="5" class="empty">Flights for your shift will appear here once the data loads.</td></tr></tbody>
+      <thead><tr><th>To</th><th>Flight</th><th>STD</th><th class="ba">BA</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="4" class="empty">Flights for your shift will appear here once the data loads.</td></tr></tbody>
     </table>
   </div>
   <div class="note" id="status"></div>
+  <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
 </div>
 
@@ -196,23 +198,25 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     const win=shiftWindow(state.dayOff,state.shift), {out,gaps,missing}=flightsFor(win), now=nowMs();
     const rows=$("rows"); rows.textContent="";
     const nextUp=out.find(f=>f.baMs>=now && !isDone(f));
-    const emptyRow=t=>{ const tr=document.createElement("tr"), td=document.createElement("td"); td.colSpan=5; td.className="empty"; td.textContent=t; tr.appendChild(td); rows.appendChild(tr); };
+    const emptyRow=t=>{ const tr=document.createElement("tr"), td=document.createElement("td"); td.colSpan=4; td.className="empty"; td.textContent=t; tr.appendChild(td); rows.appendChild(tr); };
 
     if(!state.loaded) emptyRow("Loading flight data…");
     else if(missing.length && !out.length) emptyRow("No flight data yet for "+missing.map(dayLabel).join(" and ")+". Tap Refresh, or check again after the next update.");
     else if(!out.length) emptyRow("No Akasa departures in this shift.");
     else out.forEach(f=>{
       const tr=document.createElement("tr"), done=isDone(f);
-      if(done) tr.className="done";
-      else if(f===nextUp) tr.className="nextrow";
+      if(done) tr.classList.add("done");
+      else if(f===nextUp) tr.classList.add("nextrow");
       const td=(cls)=>{ const c=document.createElement("td"); c.className=cls; tr.appendChild(c); return c; };
-      const b=document.createElement("button"); b.type="button"; b.className="tick";
-      b.setAttribute("aria-pressed",String(done));
-      b.setAttribute("aria-label",(departed(f)?"Departed: ":done?"Undo BA done for ":"Mark BA done for ")+f.no);
-      if(departed(f)) b.disabled=true;
-      b.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      b.addEventListener("click",()=>{ const k=fKey(f); if(doneMap[k]) delete doneMap[k]; else doneMap[k]=Date.now(); saveDone(); render(); });
-      td("chk").appendChild(b);
+      if(!departed(f)){
+        // tap the row to tick the BA off (tap again to undo); departed flights are crossed out automatically
+        tr.classList.add("tap"); tr.tabIndex=0; tr.setAttribute("role","button");
+        tr.setAttribute("aria-pressed",String(done));
+        tr.setAttribute("aria-label",(done?"Undo BA done for ":"Mark BA done for ")+f.no);
+        const toggle=()=>{ const k=fKey(f); if(doneMap[k]) delete doneMap[k]; else doneMap[k]=Date.now(); saveDone(); render(); };
+        tr.addEventListener("click",toggle);
+        tr.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } });
+      }
       const to=td("to"); const city=document.createElement("span"); city.className="city"; city.textContent=f.to;
       const code=document.createElement("span"); code.className="code"; code.textContent=f.code; to.append(city,code);
       td("no").textContent=f.no;
@@ -231,6 +235,16 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       left.querySelector(".big").textContent=hhmm(nextUp.baMs);
       left.querySelector(".what").textContent=same.map(f=>f.no+" → "+f.code).join(" · ");
       const right=document.createElement("div"); right.className="in"; right.textContent=fmtIn(nextUp.baMs-now);
+      nb.append(left,right);
+    } else if(state.loaded && out.length && out.some(f=>!isDone(f))){
+      const open=out.filter(f=>!isDone(f));
+      const late=open.filter(f=>now>f.baMs+OVERDUE_MS).length;
+      nb.hidden=false; nb.className="next";
+      const left=document.createElement("div");
+      left.innerHTML='<div class="k">BA under way</div><div class="what"></div>';
+      left.querySelector(".what").textContent=open.map(f=>f.no+" → "+f.code).join(" · ");
+      const right=document.createElement("div"); right.className="in";
+      right.textContent=open.length+" open"+(late?" · "+late+" late":"");
       nb.append(left,right);
     } else if(state.loaded && out.length && !nextUp){
       nb.hidden=false; nb.className="next done";
