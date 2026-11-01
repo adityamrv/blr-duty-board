@@ -528,7 +528,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       ($("bp-marks").dataset.key="", $("bp-marks")).textContent="Enter the first test time from the printout, or tap Now, then Start.";
       fab.className="fab"; fab.textContent="BA +ve"; return;
     }
-    const el=Date.now()-cs.start, e=Math.max(0,el);
+    const el=Date.now()-cs.start, e=Math.min(RED_AT,Math.max(0,el));   // stops at the 25-min deadline
     const mm=Math.floor(e/MIN), ss=Math.floor((e%MIN)/1000);
     $("bp-clock").textContent=pad(mm)+":"+pad(ss);
     const state = el>=RED_AT ? "red" : el>=BEEP_AT ? "amber" : "";
