@@ -33,6 +33,7 @@ body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+body>.wrap{padding-bottom:64px}
 
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,6.4vw,1.75rem);white-space:nowrap;letter-spacing:.01em;line-height:1;margin:0}
@@ -96,6 +97,41 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 .next .in{white-space:nowrap;font-size:1.15rem}
 @media (max-width:380px){.seg .lbl{font-size:.95rem}}
 
+/* BA positive: floating button + full-screen checklist with UTC count-up timer */
+.fab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:20;
+  border:2px solid var(--warn);background:var(--bg);color:var(--warn);border-radius:999px;padding:10px 16px;font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:.03em;box-shadow:0 4px 14px rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
+.fab.run{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.fab.run.amber{border-color:var(--accent);color:var(--accent)}
+.fab.run.red{border-color:var(--warn);color:var(--warn)}
+.sheet{position:fixed;inset:0;z-index:30;background:var(--bg);overflow-y:auto;
+  padding-top:max(14px,env(safe-area-inset-top,0px));padding-bottom:max(28px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet .wrap{gap:12px}
+.sh-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sh-head h2{font-family:var(--display);font-weight:700;font-size:1.6rem;margin:0;color:var(--warn)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;font-weight:600;font-size:.85rem;white-space:nowrap}
+.timer{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.timer .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.trow input{font:inherit;font-size:1.2rem;font-variant-numeric:tabular-nums;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-width:0}
+.clock{font-family:var(--display);font-weight:700;font-size:3.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.timer.amber{border-color:var(--accent);background:var(--accent-soft)} .timer.amber .clock{color:var(--accent)}
+.timer.red{border-color:var(--warn);background:var(--warn-soft)} .timer.red .clock{color:var(--warn)}
+.marks{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.marks b{color:var(--ink);font-weight:600}
+.grp{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:4px}
+.cl{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ci{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;padding:11px 12px;border-bottom:1px solid var(--line)}
+.ci:last-child{border-bottom:0}
+.ci .box{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);margin-top:1px;display:grid;place-items:center;color:transparent}
+.ci .box svg{width:14px;height:14px}
+.ci[aria-pressed="true"] .box{background:var(--muted);border-color:var(--muted);color:var(--bg)}
+.ci[aria-pressed="true"] .tx{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.ci .tx{line-height:1.35}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.res button{border:0;background:transparent;border-radius:7px;padding:9px 4px;font-family:var(--display);font-weight:600;font-size:1rem;text-transform:uppercase;letter-spacing:.02em}
+.res button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.resnote{font-size:.9rem;font-weight:600}
 .empty{padding:22px 16px;text-align:center;color:var(--muted)}
 .note{font-size:.8rem;color:var(--muted)}
 .note.bad{color:var(--warn);font-weight:600}
@@ -132,6 +168,42 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
 </div>
 
+<button class="fab" id="bapos-open" type="button" aria-haspopup="dialog">BA +ve</button>
+
+<div class="sheet" id="bapos" role="dialog" aria-modal="true" aria-labelledby="bapos-title" hidden>
+ <div class="wrap">
+  <div class="sh-head">
+    <h2 id="bapos-title">BA positive</h2>
+    <button class="btn" id="bapos-close" type="button">Close</button>
+  </div>
+
+  <div class="timer" id="bp-timer">
+    <div class="k">First test time (UTC)</div>
+    <div class="trow">
+      <input type="text" id="bp-time" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off" aria-label="First test time in UTC, 24-hour" style="width:7.5em">
+      <button class="btn" id="bp-now" type="button">Now</button>
+      <button class="btn" id="bp-start" type="button">Start</button>
+    </div>
+    <div class="clock" id="bp-clock">00:00</div>
+    <div class="marks" id="bp-marks">Enter the first test time from the printout, or tap Now, then Start.</div>
+  </div>
+
+  <div id="bp-list"></div>
+
+  <div class="grp">Result of the repeat test</div>
+  <div class="res" id="bp-res" role="group" aria-label="Result of the repeat test">
+    <button type="button" data-r="neg" aria-pressed="false">Negative</button>
+    <button type="button" data-r="pos" aria-pressed="false">Positive</button>
+    <button type="button" data-r="ref" aria-pressed="false">Refused</button>
+  </div>
+  <div class="resnote" id="bp-resnote" hidden></div>
+
+  <div id="bp-list2"></div>
+
+  <button class="btn" id="bp-reset" type="button">New case (clear all)</button>
+  <div class="note">From Medical Handbook Vol 1, section 11 (steps 1–5), and CAR Section 5, Series F, Part III. Keep the app open on screen for the 20-minute beep.</div>
+ </div>
+</div>
 <script>
 (function(){
   const IST_MS = 330*60000, BA_MS = 75*60000, STALE_MS = 8*3600000, OVERDUE_MS = 15*60000;
@@ -344,6 +416,157 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); });
     }).catch(()=>{});
   }
+})();
+</script>
+<script>
+(function(){
+  // ---------- BA positive case: checklist + UTC count-up timer ----------
+  const $ = id => document.getElementById(id);
+  const MIN = 60000, BEEP_AT = 20*MIN, RED_AT = 25*MIN;
+  const STEPS = [
+    {g:"Right away", items:[
+      "Crew stays in the BA room. Does not go to the aircraft.",
+      "Note the reading; crew and you attest it. Write the first test time in UTC under your signature on Appendix I.",
+      "Print the first test. Crew and you sign the printout.",
+      "Inform IOCC (Integrated Operations Control Centre) now and ask for a witness to come to the BA room.",
+      "Give Appendix I (BAT book). Crew fills it, ticks same or alternate machine and signs; you sign that the choice was theirs.",
+      "Record the machine make, serial number and calibration status.",
+      "Crew may wash the face and rinse the mouth. Tell them to come back in 15 minutes."
+    ]},
+    {g:"Before the repeat test", items:[
+      "Witness and crew back in the BA room by 15 min (5 min before the repeat).",
+      "Chosen machine working: battery charged, fresh new tube.",
+      "Control test on the chosen machine. Reading correct."
+    ]},
+    {g:"Repeat test (20–25 min)", items:[
+      "Repeat test at 20 min, witness watching, camera recording. Check the time on the machine.",
+      "Record and print both readings. Crew, witness and you sign the printouts; witness countersigns Appendix I.",
+      "No third test under any circumstances."
+    ]}
+  ];
+  const AFTER = {g:"Within 24 hours", items:[
+    "Soft copy of all documents to Chief of Flight Safety, Deputy Chief of Flight Safety, Director Flight Operations, Director In-flight and HOD (Head of Department) Medical.",
+    "Incident report: Head of Medical to Chief of Flight Safety (forwards to DGCA). Hard copy kept in the station BA room.",
+    "Save the camera clip with the case file (recordings kept 6 months)."
+  ]};
+  const RESULT = {
+    neg:"Negative: first test treated as false positive. Crew released for the flight.",
+    pos:"Positive: crew de-rostered. Note the pilot's or engineer's licence number in the BAT book. Action as per CAR Section 5, Series F, Part III.",
+    ref:"Refused: record the refusal. Crew does not operate the flight."
+  };
+  const tick='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  // case state, kept on this phone so it survives closing the app
+  let cs = {start:null, checks:{}, result:null, beeped:false};
+  try{ const v=JSON.parse(localStorage.getItem("baCase")||"null"); if(v && typeof v==="object") cs=Object.assign(cs,v); }catch(e){}
+  const save=()=>{ try{ localStorage.setItem("baCase",JSON.stringify(cs)); }catch(e){} };
+
+  const pad=n=>String(n).padStart(2,"0");
+  const utcHMS=ms=>{ const d=new Date(ms); return pad(d.getUTCHours())+":"+pad(d.getUTCMinutes())+":"+pad(d.getUTCSeconds()); };
+  const utcHM=ms=>{ const d=new Date(ms); return pad(d.getUTCHours())+":"+pad(d.getUTCMinutes()); };
+
+  function buildList(el, groups, prefix){
+    el.textContent="";
+    groups.forEach((grp,gi)=>{
+      const h=document.createElement("div"); h.className="grp"; h.textContent=grp.g; el.appendChild(h);
+      const box=document.createElement("div"); box.className="cl"; el.appendChild(box);
+      grp.items.forEach((t,ii)=>{
+        const id=prefix+gi+"-"+ii;
+        const b=document.createElement("button"); b.type="button"; b.className="ci"; b.id="ci-"+id;
+        b.setAttribute("aria-pressed",String(!!cs.checks[id]));
+        const bx=document.createElement("span"); bx.className="box"; bx.innerHTML=tick;
+        const tx=document.createElement("span"); tx.className="tx"; tx.textContent=t;
+        b.append(bx,tx);
+        b.addEventListener("click",()=>{ cs.checks[id]=!cs.checks[id]; if(!cs.checks[id]) delete cs.checks[id]; save(); b.setAttribute("aria-pressed",String(!!cs.checks[id])); });
+        box.appendChild(b);
+      });
+    });
+  }
+  function renderResult(){
+    document.querySelectorAll("#bp-res button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.r===cs.result)));
+    const n=$("bp-resnote"); n.hidden=!cs.result; n.textContent=cs.result?RESULT[cs.result]:"";
+    n.style.color = cs.result==="neg" ? "var(--ink)" : "var(--warn)";
+  }
+  function renderAll(){
+    buildList($("bp-list"), STEPS, "s");
+    buildList($("bp-list2"), [AFTER], "a");
+    $("bp-time").value = cs.start ? utcHMS(cs.start) : "";
+    renderResult(); tickTimer();
+  }
+
+  // ---- sound ----
+  let actx=null;
+  function unlockAudio(){
+    try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==="suspended") actx.resume(); }catch(e){}
+  }
+  function beep(){
+    try{
+      unlockAudio(); if(!actx) return;
+      const t0=actx.currentTime+0.05;
+      for(let i=0;i<6;i++){                    // beep-beep-beep, twice
+        const st=t0+i*0.28+(i>=3?0.5:0);
+        const o=actx.createOscillator(), g=actx.createGain();
+        o.type="square"; o.frequency.value=1250;
+        g.gain.setValueAtTime(0.0001,st); g.gain.exponentialRampToValueAtTime(0.35,st+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001,st+0.18);
+        o.connect(g).connect(actx.destination); o.start(st); o.stop(st+0.2);
+      }
+    }catch(e){}
+    try{ navigator.vibrate && navigator.vibrate([250,120,250,400,250,120,250]); }catch(e){}
+  }
+
+  // ---- timer ----
+  function tickTimer(){
+    const tm=$("bp-timer"), fab=$("bapos-open");
+    if(!cs.start){
+      $("bp-clock").textContent="00:00"; tm.className="timer";
+      $("bp-marks").textContent="Enter the first test time from the printout, or tap Now, then Start.";
+      fab.className="fab"; fab.textContent="BA +ve"; return;
+    }
+    const el=Date.now()-cs.start, e=Math.max(0,el);
+    const mm=Math.floor(e/MIN), ss=Math.floor((e%MIN)/1000);
+    $("bp-clock").textContent=pad(mm)+":"+pad(ss);
+    const state = el>=RED_AT ? "red" : el>=BEEP_AT ? "amber" : "";
+    tm.className="timer"+(state?" "+state:"");
+    const m=$("bp-marks");
+    m.innerHTML="First test <b></b> UTC · back by <b></b> · repeat at <b></b> · window closes <b></b>";
+    const bs=m.querySelectorAll("b");
+    bs[0].textContent=utcHM(cs.start); bs[1].textContent=utcHM(cs.start+15*MIN);
+    bs[2].textContent=utcHM(cs.start+BEEP_AT); bs[3].textContent=utcHM(cs.start+RED_AT);
+    if(el>=RED_AT) m.append(" · past 25 min");
+    fab.className="fab run"+(state?" "+state:""); fab.textContent="BA "+pad(mm)+":"+pad(ss);
+    if(!cs.beeped && el>=BEEP_AT && el<RED_AT){ cs.beeped=true; save(); beep(); }
+  }
+
+  function startFromInput(){
+    // accepts 13:30, 13:30:05, 1330 or 133005 (24-hour, UTC)
+    const digits=$("bp-time").value.replace(/\D/g,"");
+    if(digits.length!==4 && digits.length!==6){ $("bp-marks").textContent="Type the UTC time as HH:MM or HH:MM:SS, for example 13:30 or 133005."; return; }
+    const h=+digits.slice(0,2), mi=+digits.slice(2,4), se=digits.length===6?+digits.slice(4,6):0;
+    if(h>23||mi>59||se>59){ $("bp-marks").textContent="That time is not valid. Use 24-hour UTC, for example 13:30."; return; }
+    $("bp-time").value=pad(h)+":"+pad(mi)+":"+pad(se);
+    const n=new Date();
+    let t=Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate(),h,mi,se||0);
+    if(t-Date.now()>MIN) t-=86400000;        // e.g. 23:58 entered just after midnight UTC
+    cs.start=t; cs.beeped = (Date.now()-t)>=BEEP_AT; save(); tickTimer();
+  }
+
+  $("bapos-open").addEventListener("click",()=>{ unlockAudio(); $("bapos").hidden=false; document.body.style.overflow="hidden"; renderAll(); });
+  $("bapos-close").addEventListener("click",()=>{ $("bapos").hidden=true; document.body.style.overflow=""; });
+  $("bp-now").addEventListener("click",()=>{ unlockAudio(); const d=new Date(); $("bp-time").value=utcHMS(d.getTime()); startFromInput(); });
+  $("bp-start").addEventListener("click",()=>{ unlockAudio(); startFromInput(); });
+  $("bp-time").addEventListener("change",()=>{ if(cs.start) startFromInput(); });
+  document.querySelectorAll("#bp-res button").forEach(b=>b.addEventListener("click",()=>{ cs.result = cs.result===b.dataset.r ? null : b.dataset.r; save(); renderResult(); }));
+  let armed=false;
+  $("bp-reset").addEventListener("click",e=>{
+    const b=e.currentTarget;
+    if(!armed){ armed=true; b.textContent="Tap again to clear this case"; setTimeout(()=>{ armed=false; b.textContent="New case (clear all)"; },4000); return; }
+    armed=false; b.textContent="New case (clear all)";
+    cs={start:null, checks:{}, result:null, beeped:false}; save(); renderAll();
+  });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("bapos").hidden) $("bapos-close").click(); });
+
+  tickTimer(); setInterval(tickTimer, 500);
 })();
 </script>
 </body>

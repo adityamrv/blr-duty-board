@@ -1,6 +1,6 @@
 // Duty Board service worker: app shell works offline; flight data is fetched fresh
 // when online and falls back to the last saved copy when offline.
-const SHELL = "duty-board-shell-v5";
+const SHELL = "duty-board-shell-v6";
 const DATA = "duty-board-data";
 const SHELL_FILES = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
