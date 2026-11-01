@@ -84,7 +84,15 @@ tbody tr.tap:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 tr.done td{color:var(--muted);background-image:linear-gradient(var(--muted),var(--muted));background-size:100% 1.5px;background-position:0 50%;background-repeat:no-repeat}
 tr.nextrow td{background-color:var(--accent-soft)}
 tr.nextrow td.ba{color:var(--accent)}
+tr.inprog td{background-color:var(--accent-soft)}
+tr.inprog td.ba{color:var(--accent)}
 td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
+.prog{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.prog .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.prog .item{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border:0;background:none;padding:2px 0;text-align:left;width:100%}
+.prog .item .f{font-weight:600}
+.prog .item .r{font-family:var(--display);font-weight:600;font-size:1.1rem;color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.prog .item.over .f,.prog .item.over .r{color:var(--warn)}
 .next .in{white-space:nowrap;font-size:1.15rem}
 @media (max-width:380px){.seg .lbl{font-size:.95rem}}
 
@@ -109,6 +117,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   <div class="seg" id="days" role="group" aria-label="Day the shift starts"></div>
   <div class="seg" id="shifts" role="group" aria-label="Shift"></div>
 
+  <div class="prog" id="prog" hidden></div>
   <div class="next" id="next" hidden></div>
   <div class="summary" id="summary"></div>
 
@@ -214,6 +223,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     else out.forEach(f=>{
       const tr=document.createElement("tr"), done=isDone(f);
       if(done) tr.classList.add("done");
+      else if(now>=f.baMs && now<=f.baMs+OVERDUE_MS) tr.classList.add("inprog");
       else if(f===nextUp) tr.classList.add("nextrow");
       const td=(cls)=>{ const c=document.createElement("td"); c.className=cls; tr.appendChild(c); return c; };
       if(!departed(f)){
@@ -244,22 +254,32 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       left.querySelector(".what").textContent=same.map(f=>f.no+" → "+f.code).join(" · ");
       const right=document.createElement("div"); right.className="in"; right.textContent=fmtIn(nextUp.baMs-now);
       nb.append(left,right);
-    } else if(state.loaded && out.length && out.some(f=>!isDone(f))){
-      const open=out.filter(f=>!isDone(f));
-      const late=open.filter(f=>now>f.baMs+OVERDUE_MS).length;
-      nb.hidden=false; nb.className="next";
-      const left=document.createElement("div");
-      left.innerHTML='<div class="k">BA under way</div><div class="what"></div>';
-      left.querySelector(".what").textContent=open.map(f=>f.no+" → "+f.code).join(" · ");
-      const right=document.createElement("div"); right.className="in";
-      right.textContent=open.length+" open"+(late?" · "+late+" late":"");
-      nb.append(left,right);
-    } else if(state.loaded && out.length && !nextUp){
+    } else if(state.loaded && out.length && !nextUp && !out.some(f=>!isDone(f) && now>=f.baMs)){
       nb.hidden=false; nb.className="next done";
       const allDone=out.every(isDone);
       nb.innerHTML='<div><div class="k">Shift status</div><div class="what"></div></div>';
       nb.querySelector(".what").textContent = allDone ? "All flights in this shift are done." : "No more BA tests due in this shift.";
     } else nb.hidden=true;
+
+    // In progress: BA time reached, up to 15 min after (orange); past 15 min and not ticked (red)
+    const pg=$("prog"); pg.textContent="";
+    const active=state.loaded ? out.filter(f=>!isDone(f) && now>=f.baMs) : [];
+    if(active.length){
+      pg.hidden=false;
+      const k=document.createElement("div"); k.className="k"; k.textContent="In progress"; pg.appendChild(k);
+      active.forEach(f=>{
+        const over=now>f.baMs+OVERDUE_MS;
+        const b=document.createElement("button"); b.type="button"; b.className="item"+(over?" over":"");
+        b.setAttribute("aria-label","Mark BA done for "+f.no);
+        const l=document.createElement("span"); l.className="f"; l.textContent=f.no+" → "+f.code+" · BA "+hhmm(f.baMs);
+        const r=document.createElement("span"); r.className="r";
+        const m=Math.max(0,Math.round(((over? now-(f.baMs+OVERDUE_MS) : (f.baMs+OVERDUE_MS)-now))/60000));
+        r.textContent=over ? m+" min over" : m+" min left";
+        b.append(l,r);
+        b.addEventListener("click",()=>{ doneMap[fKey(f)]=Date.now(); saveDone(); render(); });
+        pg.appendChild(b);
+      });
+    } else pg.hidden=true;
 
 
     if(out.length){
