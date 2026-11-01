@@ -119,6 +119,11 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 .timer.red{border-color:var(--warn);background:var(--warn-soft)} .timer.red .clock{color:var(--warn)}
 .marks{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .marks b{color:var(--ink);font-weight:600}
+.tg{display:grid;grid-template-columns:auto repeat(4,1fr);gap:2px 10px;font-variant-numeric:tabular-nums;font-size:.85rem;align-items:baseline}
+.tg .h{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tg .z{font-size:.72rem;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.tg .v{font-family:var(--display);font-weight:700;font-size:1.15rem;color:var(--ink)}
+.tg .v.ist{color:var(--accent)}
 .grp{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:4px}
 .cl{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .ci{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;padding:11px 12px;border-bottom:1px solid var(--line)}
@@ -520,7 +525,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     const tm=$("bp-timer"), fab=$("bapos-open");
     if(!cs.start){
       $("bp-clock").textContent="00:00"; tm.className="timer";
-      $("bp-marks").textContent="Enter the first test time from the printout, or tap Now, then Start.";
+      ($("bp-marks").dataset.key="", $("bp-marks")).textContent="Enter the first test time from the printout, or tap Now, then Start.";
       fab.className="fab"; fab.textContent="BA +ve"; return;
     }
     const el=Date.now()-cs.start, e=Math.max(0,el);
@@ -528,12 +533,18 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     $("bp-clock").textContent=pad(mm)+":"+pad(ss);
     const state = el>=RED_AT ? "red" : el>=BEEP_AT ? "amber" : "";
     tm.className="timer"+(state?" "+state:"");
-    const m=$("bp-marks");
-    m.innerHTML="First test <b></b> UTC · back by <b></b> · repeat at <b></b> · window closes <b></b>";
-    const bs=m.querySelectorAll("b");
-    bs[0].textContent=utcHM(cs.start); bs[1].textContent=utcHM(cs.start+15*MIN);
-    bs[2].textContent=utcHM(cs.start+BEEP_AT); bs[3].textContent=utcHM(cs.start+RED_AT);
-    if(el>=RED_AT) m.append(" · past 25 min");
+    // key times in UTC (for records) and IST (to tell the crew)
+    const m=$("bp-marks"), pts=[cs.start, cs.start+15*MIN, cs.start+BEEP_AT, cs.start+RED_AT];
+    const key=pts.join(",");
+    if(m.dataset.key!==key){
+      m.dataset.key=key; m.textContent="";
+      const g=document.createElement("div"); g.className="tg";
+      const cell=(cls,txt)=>{ const c=document.createElement("span"); c.className=cls; c.textContent=txt; g.appendChild(c); };
+      cell("h",""); ["First","Back by","Repeat","Closes"].forEach(t=>cell("h",t));
+      cell("z","UTC"); pts.forEach(t=>cell("v",utcHM(t)));
+      cell("z","IST"); pts.forEach(t=>cell("v ist",utcHM(t+330*MIN)));
+      m.appendChild(g);
+    }
     fab.className="fab run"+(state?" "+state:""); fab.textContent="BA "+pad(mm)+":"+pad(ss);
     if(!cs.beeped && el>=BEEP_AT && el<RED_AT){ cs.beeped=true; save(); beep(); }
   }
@@ -541,9 +552,9 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   function startFromInput(){
     // accepts 13:30, 13:30:05, 1330 or 133005 (24-hour, UTC)
     const digits=$("bp-time").value.replace(/\D/g,"");
-    if(digits.length!==4 && digits.length!==6){ $("bp-marks").textContent="Type the UTC time as HH:MM or HH:MM:SS, for example 13:30 or 133005."; return; }
+    if(digits.length!==4 && digits.length!==6){ ($("bp-marks").dataset.key="", $("bp-marks")).textContent="Type the UTC time as HH:MM or HH:MM:SS, for example 13:30 or 133005."; return; }
     const h=+digits.slice(0,2), mi=+digits.slice(2,4), se=digits.length===6?+digits.slice(4,6):0;
-    if(h>23||mi>59||se>59){ $("bp-marks").textContent="That time is not valid. Use 24-hour UTC, for example 13:30."; return; }
+    if(h>23||mi>59||se>59){ ($("bp-marks").dataset.key="", $("bp-marks")).textContent="That time is not valid. Use 24-hour UTC, for example 13:30."; return; }
     $("bp-time").value=pad(h)+":"+pad(mi)+":"+pad(se);
     const n=new Date();
     let t=Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate(),h,mi,se||0);
