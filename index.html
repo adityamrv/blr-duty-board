@@ -243,12 +243,14 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 
   function autoPick(){
     const p=istParts(nowMs()), t=p.h*60+p.mi;
-    if (t < hm("06:30")) return {dayOff:-1, shift:"night"};
+    if (t < hm("06:30")) return {dayOff:0, shift:"night"};
     if (t >= hm("22:00")) return {dayOff:0, shift:"night"};
     if (t >= hm("13:30")) return {dayOff:0, shift:"afternoon"};
     return {dayOff:0, shift:"morning"};
   }
   function shiftWindow(dayOff, shiftId){
+    const p=istParts(nowMs()), early=(p.h*60+p.mi)<hm("06:30");
+    if(shiftId==="night" && early) dayOff-=1;   // after midnight, "night" means the night shift that is still running
     const sh=SHIFTS.find(x=>x.id===shiftId), base=dayStartMs(dayOff);
     const start=base+hm(sh.s)*60000; let end=base+hm(sh.e)*60000; if(end<=start) end+=86400000;
     return {sh,start,end,lo:start+BA_MS,hi:end+BA_MS,base};
@@ -280,8 +282,8 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   }
   function renderControls(){
     const p=istParts(nowMs()), early=(p.h*60+p.mi)<hm("06:30");
-    const offs = (early||state.dayOff===-1) ? [-1,0,1] : [0,1];
-    const names={"-1":"Yesterday","0":"Today","1":"Tomorrow"};
+    const offs = [0,1];
+    const names={"0":"Today","1":"Tomorrow"};
     const days=$("days"); days.style.setProperty("--n",offs.length); days.textContent="";
     offs.forEach(o=>days.appendChild(segButton("day"+o, names[o], dayLabel(dayStartMs(o)), o===state.dayOff, ()=>{state.dayOff=o; render();})));
     const shifts=$("shifts"); shifts.textContent="";
@@ -303,7 +305,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       else if(now>=f.baMs && now<=f.baMs+OVERDUE_MS) tr.classList.add("inprog");
       else if(f===nextUp) tr.classList.add("nextrow");
       const td=(cls)=>{ const c=document.createElement("td"); c.className=cls; tr.appendChild(c); return c; };
-      if(!departed(f)){
+      if(!departed(f) && now>=f.baMs){   // can be ticked only from the BA time
         // tap the row to tick the BA off (tap again to undo); departed flights are crossed out automatically
         tr.classList.add("tap"); tr.tabIndex=0; tr.setAttribute("role","button");
         tr.setAttribute("aria-pressed",String(done));
