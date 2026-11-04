@@ -1,446 +1,281 @@
 {
- "updatedAt": "2026-11-04T07:00:00+05:30",
+ "updatedAt": "2026-11-04T07:05:00+05:30",
  "me": "Aditya",
- "notes": {
-  "roster": "From the roster saved earlier (9–16 Nov)",
-  "draft": "Draft made by Claude on 31 Oct, not yet approved"
- },
+ "source": "Official BLR medical roster (photo, 4 Nov)",
  "people": [
   {
-   "n": "Amit",
-   "role": "doctor",
-   "lvl": "experienced"
-  },
-  {
-   "n": "Venkatesan",
-   "role": "doctor",
-   "lvl": "experienced"
-  },
-  {
-   "n": "Arpitha",
-   "role": "doctor",
-   "lvl": "experienced"
-  },
-  {
-   "n": "Aditya",
-   "role": "doctor",
-   "lvl": "new"
-  },
-  {
    "n": "Dakshina",
-   "role": "staff",
-   "lvl": "experienced"
+   "role": "staff"
   },
   {
    "n": "Sandesh",
-   "role": "staff",
-   "lvl": "experienced"
-  },
-  {
-   "n": "Sahil",
-   "role": "staff",
-   "lvl": "experienced"
+   "role": "staff"
   },
   {
    "n": "Dhiraj",
-   "role": "staff",
-   "lvl": "intermediate"
+   "role": "staff"
+  },
+  {
+   "n": "Sahil",
+   "role": "staff"
   },
   {
    "n": "Anusree",
-   "role": "staff",
-   "lvl": "intermediate"
+   "role": "staff"
   },
   {
    "n": "Abhijeet",
-   "role": "staff",
-   "lvl": "new"
+   "role": "staff"
   },
   {
    "n": "Pema",
-   "role": "admin",
-   "lvl": "experienced"
+   "role": "admin"
   },
   {
    "n": "Daris",
-   "role": "admin",
-   "lvl": "experienced"
+   "role": "admin"
+  },
+  {
+   "n": "Amit",
+   "role": "doctor"
+  },
+  {
+   "n": "Venkatesan",
+   "role": "doctor"
+  },
+  {
+   "n": "Arpitha",
+   "role": "doctor"
+  },
+  {
+   "n": "Aditya",
+   "role": "doctor"
   }
  ],
  "days": {
+  "2026-11-01": {
+   "Dakshina": "T2 0600-1430",
+   "Sandesh": "O",
+   "Dhiraj": "leave",
+   "Sahil": "2200-0630",
+   "Anusree": "O",
+   "Abhijeet": "1000-1830",
+   "Pema": "T2 1330-2200",
+   "Daris": "O",
+   "Amit": "O",
+   "Venkatesan": "2200-0630",
+   "Arpitha": "0630-1500",
+   "Aditya": "1330-2200"
+  },
+  "2026-11-02": {
+   "Dakshina": "1330-2200",
+   "Sandesh": "T2 0600-1430",
+   "Dhiraj": "leave",
+   "Sahil": "2200-0630",
+   "Anusree": "O",
+   "Abhijeet": "1000-1830",
+   "Pema": "0900-1730",
+   "Daris": "0600-1500",
+   "Amit": "0630-1500",
+   "Venkatesan": "2200-0630",
+   "Arpitha": "1330-2200",
+   "Aditya": "O"
+  },
+  "2026-11-03": {
+   "Dakshina": "2200-0630",
+   "Sandesh": "T2 0600-1430",
+   "Dhiraj": "leave",
+   "Sahil": "2200-0630",
+   "Anusree": "comp off",
+   "Abhijeet": "1000-1830",
+   "Pema": "0600-1430",
+   "Daris": "1330-2200",
+   "Amit": "0900-1730",
+   "Venkatesan": "O",
+   "Arpitha": "1330-2200",
+   "Aditya": "0630-1500"
+  },
+  "2026-11-04": {
+   "Dakshina": "2200-0630",
+   "Sandesh": "T2 0600-1430",
+   "Dhiraj": "leave",
+   "Sahil": "O",
+   "Anusree": "0600-1430",
+   "Abhijeet": "1000-1830",
+   "Pema": "0900-1730",
+   "Daris": "T2 1330-2200",
+   "Amit": "1330-2200",
+   "Venkatesan": "O",
+   "Arpitha": "2200-0630",
+   "Aditya": "0630-1500"
+  },
+  "2026-11-05": {
+   "Dakshina": "2200-0630",
+   "Sandesh": "1330-2200",
+   "Dhiraj": "leave",
+   "Sahil": "O",
+   "Anusree": "T2 0600-1430",
+   "Abhijeet": "1000-1830",
+   "Pema": "0600-1430",
+   "Daris": "0900-1730",
+   "Amit": "1330-2200",
+   "Venkatesan": "comp off",
+   "Arpitha": "2200-0630",
+   "Aditya": "0630-1500"
+  },
+  "2026-11-06": {
+   "Dakshina": "O",
+   "Sandesh": "2200-0630",
+   "Dhiraj": "leave",
+   "Sahil": "T2 0600-1430",
+   "Anusree": "1330-2200",
+   "Abhijeet": "1000-1830",
+   "Pema": "0900-1730",
+   "Daris": "0600-1430",
+   "Amit": "0900-1730",
+   "Venkatesan": "0630-1500",
+   "Arpitha": "2200-0630",
+   "Aditya": "1330-2200"
+  },
+  "2026-11-07": {
+   "Dakshina": "O",
+   "Sandesh": "2200-0630",
+   "Dhiraj": "T2 0600-1430",
+   "Sahil": "0600-1430",
+   "Anusree": "1330-2200",
+   "Abhijeet": "O",
+   "Pema": "O",
+   "Daris": "0900-1730",
+   "Amit": "O",
+   "Venkatesan": "0630-1500",
+   "Arpitha": "2200-0630",
+   "Aditya": "1330-2200"
+  },
+  "2026-11-08": {
+   "Dakshina": "T2 0600-1430",
+   "Sandesh": "2200-0630",
+   "Dhiraj": "0600-1430",
+   "Sahil": "2200-0630",
+   "Anusree": "T2 1330-2200",
+   "Abhijeet": "1000-1830",
+   "Pema": "1330-2200",
+   "Daris": "O",
+   "Amit": "O",
+   "Venkatesan": "0800-1630",
+   "Arpitha": "O",
+   "Aditya": "O"
+  },
   "2026-11-09": {
-   "status": "roster",
-   "s": {
-    "Amit": "X",
-    "Venkatesan": "N",
-    "Arpitha": "O",
-    "Aditya": "G",
-    "Dakshina": "M2",
-    "Sandesh": "O",
-    "Dhiraj": "E1",
-    "Sahil": "N",
-    "Anusree": "O",
-    "Abhijeet": "G",
-    "Pema": "E1",
-    "Daris": "M"
-   }
+   "Dakshina": "T2 0600-1430",
+   "Sandesh": "O",
+   "Dhiraj": "1330-2200",
+   "Sahil": "2200-0630",
+   "Anusree": "O",
+   "Abhijeet": "1000-1830",
+   "Pema": "1330-2200",
+   "Daris": "0600-1430",
+   "Amit": "leave",
+   "Venkatesan": "2200-0630",
+   "Arpitha": "O",
+   "Aditya": "0800-1630"
   },
   "2026-11-10": {
-   "status": "roster",
-   "s": {
-    "Amit": "X",
-    "Venkatesan": "N",
-    "Arpitha": "M",
-    "Aditya": "E",
-    "Dakshina": "E1",
-    "Sandesh": "O",
-    "Dhiraj": "N",
-    "Sahil": "O",
-    "Anusree": "M2",
-    "Abhijeet": "G",
-    "Pema": "X",
-    "Daris": "M"
-   }
+   "Dakshina": "1330-2200",
+   "Sandesh": "O",
+   "Dhiraj": "2200-0630",
+   "Sahil": "O",
+   "Anusree": "T2 0600-1430",
+   "Abhijeet": "1000-1830",
+   "Pema": "PH",
+   "Daris": "0600-1430",
+   "Amit": "PH",
+   "Venkatesan": "2200-0630",
+   "Arpitha": "0630-1500",
+   "Aditya": "1330-2200"
   },
   "2026-11-11": {
-   "status": "roster",
-   "s": {
-    "Amit": "M",
-    "Venkatesan": "O",
-    "Arpitha": "E",
-    "Aditya": "N",
-    "Dakshina": "E1",
-    "Sandesh": "M1",
-    "Dhiraj": "N",
-    "Sahil": "O",
-    "Anusree": "M2",
-    "Abhijeet": "G",
-    "Pema": "G",
-    "Daris": "E2"
-   }
+   "Dakshina": "1330-2200",
+   "Sandesh": "0600-1430",
+   "Dhiraj": "2200-0630",
+   "Sahil": "O",
+   "Anusree": "T2 0600-1430",
+   "Abhijeet": "1000-1830",
+   "Pema": "0900-1730",
+   "Daris": "T2 1330-2200",
+   "Amit": "0630-1500",
+   "Venkatesan": "O",
+   "Arpitha": "1330-2200",
+   "Aditya": "2200-0630"
   },
   "2026-11-12": {
-   "status": "roster",
-   "s": {
-    "Amit": "M",
-    "Venkatesan": "O",
-    "Arpitha": "E",
-    "Aditya": "N",
-    "Dakshina": "N",
-    "Sandesh": "M1",
-    "Dhiraj": "O",
-    "Sahil": "O",
-    "Anusree": "M2",
-    "Abhijeet": "G",
-    "Pema": "G",
-    "Daris": "E1"
-   }
+   "Dakshina": "2200-0630",
+   "Sandesh": "0600-1430",
+   "Dhiraj": "O",
+   "Sahil": "O",
+   "Anusree": "T2 0600-1430",
+   "Abhijeet": "1000-1830",
+   "Pema": "0900-1730",
+   "Daris": "1330-2200",
+   "Amit": "0630-1500",
+   "Venkatesan": "O",
+   "Arpitha": "1330-2200",
+   "Aditya": "2200-0630"
   },
   "2026-11-13": {
-   "status": "roster",
-   "s": {
-    "Amit": "X",
-    "Venkatesan": "X",
-    "Arpitha": "G",
-    "Aditya": "N",
-    "Dakshina": "N",
-    "Sandesh": "M1",
-    "Dhiraj": "O",
-    "Sahil": "M2",
-    "Anusree": "E1",
-    "Abhijeet": "G",
-    "Pema": "G",
-    "Daris": "E1"
-   }
+   "Dakshina": "2200-0630",
+   "Sandesh": "0600-1430",
+   "Dhiraj": "O",
+   "Sahil": "T2 0600-1430",
+   "Anusree": "1330-2200",
+   "Abhijeet": "1000-1830",
+   "Pema": "0900-1730",
+   "Daris": "1330-2200",
+   "Amit": "DEL",
+   "Venkatesan": "DEL",
+   "Arpitha": "0800-1630",
+   "Aditya": "2200-0630"
   },
   "2026-11-14": {
-   "status": "roster",
-   "s": {
-    "Amit": "O",
-    "Venkatesan": "G",
-    "Arpitha": "N",
-    "Aditya": "O",
-    "Dakshina": "O",
-    "Sandesh": "N",
-    "Dhiraj": "M2",
-    "Sahil": "M1",
-    "Anusree": "E1",
-    "Abhijeet": "O",
-    "Pema": "O",
-    "Daris": "E1"
-   }
+   "Dakshina": "O",
+   "Sandesh": "2200-0630",
+   "Dhiraj": "T2 0600-1430",
+   "Sahil": "0600-1430",
+   "Anusree": "1330-2200",
+   "Abhijeet": "O",
+   "Pema": "O",
+   "Daris": "1330-2200",
+   "Amit": "O",
+   "Venkatesan": "0800-1630",
+   "Arpitha": "2200-0630",
+   "Aditya": "O"
   },
   "2026-11-15": {
-   "status": "roster",
-   "s": {
-    "Amit": "O",
-    "Venkatesan": "G",
-    "Arpitha": "N",
-    "Aditya": "O",
-    "Dakshina": "O",
-    "Sandesh": "N",
-    "Dhiraj": "M2",
-    "Sahil": "M1",
-    "Anusree": "E2",
-    "Abhijeet": "M1",
-    "Pema": "E1",
-    "Daris": "O"
-   }
+   "Dakshina": "O",
+   "Sandesh": "2200-0630",
+   "Dhiraj": "T2 0600-1430",
+   "Sahil": "0600-1430",
+   "Anusree": "T2 1330-2200",
+   "Abhijeet": "0600-1430",
+   "Pema": "1330-2200",
+   "Daris": "O",
+   "Amit": "O",
+   "Venkatesan": "0800-1630",
+   "Arpitha": "2200-0630",
+   "Aditya": "O"
   },
   "2026-11-16": {
-   "status": "roster",
-   "s": {
-    "Amit": "E",
-    "Venkatesan": "N",
-    "Arpitha": "O",
-    "Aditya": "M",
-    "Dakshina": "M2",
-    "Sandesh": "O",
-    "Dhiraj": "M1",
-    "Sahil": "N",
-    "Anusree": "E1",
-    "Abhijeet": "E1",
-    "Pema": "G",
-    "Daris": "M"
-   }
-  },
-  "2026-11-17": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "M1",
-    "Sandesh": "O",
-    "Dhiraj": "M2",
-    "Sahil": "N",
-    "Anusree": "O",
-    "Abhijeet": "O",
-    "Pema": "G",
-    "Daris": "E1",
-    "Amit": "E",
-    "Venkatesan": "N",
-    "Arpitha": "O",
-    "Aditya": "M"
-   }
-  },
-  "2026-11-18": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "N",
-    "Sandesh": "M2",
-    "Dhiraj": "E2",
-    "Sahil": "O",
-    "Anusree": "O",
-    "Abhijeet": "O",
-    "Pema": "G",
-    "Daris": "E1",
-    "Amit": "E",
-    "Venkatesan": "O",
-    "Arpitha": "M",
-    "Aditya": "N"
-   }
-  },
-  "2026-11-19": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "N",
-    "Sandesh": "M2",
-    "Dhiraj": "E1",
-    "Sahil": "O",
-    "Anusree": "O",
-    "Abhijeet": "O",
-    "Pema": "G",
-    "Daris": "E1",
-    "Amit": "E",
-    "Venkatesan": "O",
-    "Arpitha": "M",
-    "Aditya": "N"
-   }
-  },
-  "2026-11-20": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "O",
-    "Sandesh": "M1",
-    "Dhiraj": "O",
-    "Sahil": "M2",
-    "Anusree": "N",
-    "Abhijeet": "M1",
-    "Pema": "G",
-    "Daris": "E1",
-    "Amit": "E",
-    "Venkatesan": "M",
-    "Arpitha": "N",
-    "Aditya": "O"
-   }
-  },
-  "2026-11-21": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "O",
-    "Sandesh": "M1",
-    "Dhiraj": "O",
-    "Sahil": "M2",
-    "Anusree": "N",
-    "Abhijeet": "M1",
-    "Pema": "O",
-    "Daris": "E1",
-    "Amit": "E",
-    "Venkatesan": "M",
-    "Arpitha": "N",
-    "Aditya": "O"
-   }
-  },
-  "2026-11-22": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "M2",
-    "Sandesh": "N",
-    "Dhiraj": "M1",
-    "Sahil": "E1",
-    "Anusree": "O",
-    "Abhijeet": "E1",
-    "Pema": "E2",
-    "Daris": "O",
-    "Amit": "O",
-    "Venkatesan": "M",
-    "Arpitha": "N",
-    "Aditya": "E"
-   }
-  },
-  "2026-11-23": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "M2",
-    "Sandesh": "N",
-    "Dhiraj": "M1",
-    "Sahil": "E1",
-    "Anusree": "O",
-    "Abhijeet": "E1",
-    "Pema": "E1",
-    "Daris": "G",
-    "Amit": "M",
-    "Venkatesan": "N",
-    "Arpitha": "O",
-    "Aditya": "E"
-   }
-  },
-  "2026-11-24": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "E1",
-    "Sandesh": "O",
-    "Dhiraj": "N",
-    "Sahil": "N",
-    "Anusree": "M2",
-    "Abhijeet": "E1",
-    "Pema": "E1",
-    "Daris": "G",
-    "Amit": "M",
-    "Venkatesan": "N",
-    "Arpitha": "O",
-    "Aditya": "E"
-   }
-  },
-  "2026-11-25": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "E1",
-    "Sandesh": "O",
-    "Dhiraj": "N",
-    "Sahil": "N",
-    "Anusree": "M2",
-    "Abhijeet": "E1",
-    "Pema": "E2",
-    "Daris": "G",
-    "Amit": "O",
-    "Venkatesan": "N",
-    "Arpitha": "M",
-    "Aditya": "E"
-   }
-  },
-  "2026-11-26": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "N",
-    "Sandesh": "M1",
-    "Dhiraj": "O",
-    "Sahil": "O",
-    "Anusree": "M2",
-    "Abhijeet": "O",
-    "Pema": "E1",
-    "Daris": "G",
-    "Amit": "E",
-    "Venkatesan": "O",
-    "Arpitha": "M",
-    "Aditya": "N"
-   }
-  },
-  "2026-11-27": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "N",
-    "Sandesh": "M2",
-    "Dhiraj": "O",
-    "Sahil": "O",
-    "Anusree": "M1",
-    "Abhijeet": "O",
-    "Pema": "E1",
-    "Daris": "G",
-    "Amit": "E",
-    "Venkatesan": "O",
-    "Arpitha": "M",
-    "Aditya": "N"
-   }
-  },
-  "2026-11-28": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "O",
-    "Sandesh": "E1",
-    "Dhiraj": "M2",
-    "Sahil": "M1",
-    "Anusree": "N",
-    "Abhijeet": "M1",
-    "Pema": "O",
-    "Daris": "G",
-    "Amit": "E",
-    "Venkatesan": "M",
-    "Arpitha": "N",
-    "Aditya": "O"
-   }
-  },
-  "2026-11-29": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "O",
-    "Sandesh": "E1",
-    "Dhiraj": "M2",
-    "Sahil": "M1",
-    "Anusree": "N",
-    "Abhijeet": "M1",
-    "Pema": "E2",
-    "Daris": "O",
-    "Amit": "E",
-    "Venkatesan": "M",
-    "Arpitha": "N",
-    "Aditya": "O"
-   }
-  },
-  "2026-11-30": {
-   "status": "draft",
-   "s": {
-    "Dakshina": "M2",
-    "Sandesh": "N",
-    "Dhiraj": "N",
-    "Sahil": "E1",
-    "Anusree": "O",
-    "Abhijeet": "E1",
-    "Pema": "E1",
-    "Daris": "G",
-    "Amit": "E",
-    "Venkatesan": "M",
-    "Arpitha": "O",
-    "Aditya": "N"
-   }
+   "Dakshina": "T2 0600-1430",
+   "Sandesh": "O",
+   "Dhiraj": "0600-1430",
+   "Sahil": "2200-0630",
+   "Anusree": "1330-2200",
+   "Abhijeet": "1330-2200",
+   "Pema": "0900-1730",
+   "Daris": "0600-1430",
+   "Amit": "1330-2200",
+   "Venkatesan": "2200-0630",
+   "Arpitha": "O",
+   "Aditya": "0630-1500"
   }
  }
 }

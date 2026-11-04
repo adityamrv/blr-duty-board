@@ -8,6 +8,6 @@ A small installable web app: Akasa Air departures from Bengaluru (BLR) for each 
 
 ## Roster tab
 
-- The **Roster** tab shows the BLR medical team duty roster from `roster.json`: your shift today and tomorrow, who is on duty today, and a sideways-scrolling grid (dates across; Morning, Evening, Night, Off down each column).
-- `roster.json` holds one entry per date: `status` (`roster` = from the official roster, `draft` = not approved yet) and each person's shift code — `M`/`M1` morning, `M2` morning Terminal 2, `G` general, `E`/`E1` evening, `E2` evening Terminal 2, `N` night, `O` off, `X` away.
+- The **Roster** tab shows the BLR medical team duty roster from `roster.json`: your shift today and tomorrow, who is on duty today, and a sideways-scrolling grid (dates across; Morning, Evening, Night, Off / away down each column).
+- `roster.json` keeps each cell exactly as written in the official roster (`T2 0600-1430`, `1330-2200`, `2200-0630`, `O`, `leave`, `comp off`, `PH`, `DEL`…), per person per date. The app sorts each cell into a shift by its start time; T2 cells go to the Terminal 2 row; anything that is not a time goes to Off / away.
 - To load a new roster, add or replace the dates in `roster.json`; the flight-data Action does not touch this file.

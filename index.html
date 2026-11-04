@@ -148,9 +148,9 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 
 /* Roster: shift colours as in the approved roster page */
 :root{--am:#FFC933;--am-soft:#3A2F10;--am-ink:#2E2000;--pm:#FF5C96;--pm-soft:#3E1828;--pm-ink:#fff;
-  --nt:#6A5CFF;--nt-soft:#25205A;--nt-ink:#fff;--t2:#2FD3C5;--t2-ink:#05201E;--new:#FF6B7D}
+  --nt:#6A5CFF;--nt-soft:#25205A;--nt-ink:#fff;--t2:#2FD3C5;--t2-ink:#05201E}
 @media (prefers-color-scheme: light){:root{--am:#FFC21A;--am-soft:#FFF1C2;--am-ink:#3D2A00;--pm:#FF4F8B;--pm-soft:#FFDBE8;
-  --nt:#3B2FC9;--nt-soft:#DFDCFF;--t2:#00A396;--t2-ink:#fff;--new:#D7263D}}
+  --nt:#3B2FC9;--nt-soft:#DFDCFF;--t2:#00A396;--t2-ink:#fff}}
 .today{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
 .today .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .mine{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -166,8 +166,6 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 .crew .sub{color:var(--muted);font-size:.8rem}
 .tag{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.05em;border-radius:4px;padding:1px 5px;vertical-align:1px}
 .tag.t2{background:var(--t2);color:var(--t2-ink)}
-.tag.nw{color:var(--new);padding:0 0 0 3px}
-.tag.dr{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);margin-left:4px}
 .me{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:2px}
 
 .rbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:78vh;-webkit-overflow-scrolling:touch}
@@ -185,6 +183,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 .rbox tr.am td.v{background:var(--am-soft)} .rbox tr.pm td.v{background:var(--pm-soft)} .rbox tr.nt td.v{background:var(--nt-soft)}
 .rbox td.v{padding:5px 6px;text-align:center;font-weight:600;font-size:.85rem;line-height:1.25;height:32px}
 .rbox td.v .sub{display:block;font-size:.66rem;font-weight:500;color:var(--muted)}
+.mine .c .d+.s+.d{margin-top:2px}
 .rbox td.v.dash{color:var(--muted);font-weight:400}
 .rbox tr.off td.v{font-weight:400;font-size:.78rem;color:var(--muted)}
 .rbox td.v.now{box-shadow:inset 2px 0 0 var(--accent),inset -2px 0 0 var(--accent)}
@@ -217,8 +216,6 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       <span><i style="background:var(--pm)"></i>Evening</span>
       <span><i style="background:var(--nt)"></i>Night</span>
       <span><span class="tag t2">T2</span> Terminal 2</span>
-      <span><span class="tag nw">NEW</span> New joiner</span>
-      <span><span class="tag dr">DRAFT</span> Not approved yet</span>
     </div>
     <div class="rbox" id="r-box"><table id="r-table"></table></div>
     <div class="note" id="r-src"></div>
@@ -656,7 +653,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 </script>
 <script>
 (function(){
-  // ---------- Tabs + duty roster (roster.json) ----------
+  // ---------- Tabs + duty roster (roster.json: raw cell text from the official roster, per person per date) ----------
   const $ = id => document.getElementById(id);
   const IST_MS = 330*60000;
   let R = null, offline = false, scrolled = false;
@@ -671,43 +668,52 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   $("tab-ba").addEventListener("click",()=>showTab("ba"));
   $("tab-roster").addEventListener("click",()=>showTab("roster"));
 
-  const isoIST = off => { const d=new Date(Date.now()+IST_MS+off*86400000); return d.toISOString().slice(0,10); };
+  const isoIST = off => new Date(Date.now()+IST_MS+off*86400000).toISOString().slice(0,10);
   const dayLbl = iso => new Date(iso+"T00:00:00Z").toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short",day:"numeric",month:"short"});
   const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-  // shift codes: M/M1 morning T1, M2 morning T2, G general (counts as morning), E/E1 evening T1, E2 evening T2, N night, O off, X away
-  const SLOT = {M:["am",""],M1:["am",""],G:["am","general"],M2:["am","t2"],E:["pm",""],E1:["pm",""],E2:["pm","t2"],N:["nt",""]};
-  const MYLBL = {M:"Morning",M1:"Morning",M2:"Morning · T2",G:"General",E:"Evening",E1:"Evening",E2:"Evening · T2",N:"Night",O:"Off",X:"Away"};
+  // read one roster cell: "T2 0600-1430", "1330-2200", "2200-0630", "O", "leave", "comp off", "PH", "DEL"...
+  const STD = {am:["0600-1430","0630-1500"], pm:["1330-2200"], nt:["2200-0630"]};
+  function parse(raw){
+    let v=String(raw||"").trim(); if(!v) return null;
+    let t2=false; if(/^t2/i.test(v)){ t2=true; v=v.replace(/^t2[\s\-]*/i,""); }
+    const m=v.match(/^(\d{4})\s*-\s*(\d{4})$/);
+    if(m){
+      const s=+m[1], time=m[1]+"-"+m[2];
+      const slot = (s>=2000||s<400) ? "nt" : s>=1200 ? "pm" : "am";
+      return {slot, t2, time, odd: !STD[slot].includes(time)};
+    }
+    return {slot:"off", label: /^o$/i.test(v) ? "" : v};
+  }
+  const SLOTNAME = {am:"Morning", pm:"Evening", nt:"Night"};
 
-  function name(p, opts){
-    opts=opts||{};
-    let h = (p.role==="doctor"?"Dr ":"")+esc(p.n);
-    if(R && p.n===R.me) h = '<span class="me">'+h+'</span>';
-    if(p.lvl==="new") h += '<span class="tag nw">NEW</span>';
-    if(opts.t2) h = '<span class="tag t2">T2</span> '+h;
-    if(opts.gen) h += ' <span class="sub">general</span>';
+  function name(p, c){
+    let h=(p.role==="doctor"?"Dr ":"")+esc(p.n);
+    if(R && p.n===R.me) h='<span class="me">'+h+'</span>';
+    if(c && c.t2) h='<span class="tag t2">T2</span> '+h;
+    if(c && c.odd) h+=' <span class="sub">'+c.time+'</span>';
+    if(c && c.label) h+=' <span class="sub">'+esc(c.label)+'</span>';
     return h;
   }
   function slots(iso){
     const day=R.days[iso]; if(!day) return null;
     const c={am:{doctor:[],staff:[],admin:[],t2:[]},pm:{doctor:[],staff:[],admin:[],t2:[]},nt:{doctor:[],staff:[],admin:[],t2:[]},off:[]};
     R.people.forEach(p=>{
-      const code=day.s[p.n]; if(!code) return;
-      if(code==="O"||code==="X"){ c.off.push(name(p)+(code==="X"?' <span class="sub">away</span>':"")); return; }
-      const s=SLOT[code]; if(!s) return;
-      if(s[1]==="t2") c[s[0]].t2.push(name(p,{t2:true}));
-      else c[s[0]][p.role].push(name(p,{gen:s[1]==="general"}));
+      const x=parse(day[p.n]); if(!x) return;
+      if(x.slot==="off"){ c.off.push(name(p,x)); return; }
+      if(x.t2) c[x.slot].t2.push(name(p,x)); else c[x.slot][p.role].push(name(p,x));
     });
     return c;
   }
 
   function renderToday(){
     const el=$("r-today"), today=isoIST(0), tom=isoIST(1);
-    const mine = iso => { const d=R.days[iso]; return d ? d.s[R.me] : null; };
-    const card = (lbl, iso) => {
-      const code=mine(iso), cls = code && SLOT[code] ? SLOT[code][0] : "";
-      const dr = R.days[iso] && R.days[iso].status==="draft" ? ' <span class="tag dr">DRAFT</span>' : "";
-      return '<div class="c '+cls+'"><div class="d">'+lbl+' · '+dayLbl(iso)+dr+'</div><div class="s">'+(code?(MYLBL[code]||code):"Not in roster")+'</div></div>';
+    const card=(lbl,iso)=>{
+      const d=R.days[iso], x=d?parse(d[R.me]):null;
+      let big="Not in roster", small="", cls="";
+      if(x && x.slot==="off"){ big=x.label||"Off"; }
+      else if(x){ big=SLOTNAME[x.slot]+(x.t2?" · T2":""); small=x.time; cls=x.slot; }
+      return '<div class="c '+cls+'"><div class="d">'+lbl+' · '+dayLbl(iso)+'</div><div class="s">'+esc(big)+'</div>'+(small?'<div class="d">'+small+'</div>':'')+'</div>';
     };
     let h='<div class="k">Your shift</div><div class="mine">'+card("Today",today)+card("Tomorrow",tom)+'</div>';
     const c=slots(today);
@@ -716,23 +722,21 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       h+='<div class="k">On duty today</div><div class="crew">'+line("am","Morning")+line("pm","Evening")+line("nt","Night")+'</div>';
     } else {
       const ds=Object.keys(R.days).sort();
-      h+='<div class="note">No roster saved for today yet'+(ds.length?' (saved: '+dayLbl(ds[0])+' – '+dayLbl(ds[ds.length-1])+')':'')+'.</div>';
+      h+='<div class="note">No roster saved for today'+(ds.length?' (saved: '+dayLbl(ds[0])+' – '+dayLbl(ds[ds.length-1])+')':'')+'.</div>';
     }
     el.innerHTML=h;
   }
 
   function renderGrid(){
-    const ds=Object.keys(R.days).sort(), today=isoIST(0);
-    const C=ds.map(slots);
+    const ds=Object.keys(R.days).sort(), today=isoIST(0), C=ds.map(slots);
     let h='<thead><tr><th class="corner"></th>'+ds.map(iso=>{
       const d=new Date(iso+"T00:00:00Z"), dow=d.getUTCDay(), we=dow===0||dow===6;
-      const dr=R.days[iso].status==="draft"?'<br><span class="tag dr">DRAFT</span>':"";
-      return '<th class="'+(we?"we ":"")+(iso===today?"now":"")+'" data-iso="'+iso+'">'+d.toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short"})+'<b>'+d.getUTCDate()+' '+d.toLocaleDateString("en-GB",{timeZone:"UTC",month:"short"})+'</b>'+dr+'</th>';
+      return '<th class="'+(we?"we ":"")+(iso===today?"now":"")+'" data-iso="'+iso+'">'+d.toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short"})+'<b>'+d.getUTCDate()+' '+d.toLocaleDateString("en-GB",{timeZone:"UTC",month:"short"})+'</b></th>';
     }).join("")+'</tr></thead><tbody>';
     const ROWS=[["h","am","Morning"],["r","am","Doctor","doctor"],["r","am","Staff","staff"],["r","am","Admin","admin"],["r","am","Terminal 2","t2"],
                 ["h","pm","Evening"],["r","pm","Doctor","doctor"],["r","pm","Staff","staff"],["r","pm","Admin","admin"],["r","pm","Terminal 2","t2"],
                 ["h","nt","Night"],["r","nt","Doctor","doctor"],["r","nt","Staff","staff"],
-                ["h","off","Off"],["r","off","",null]];
+                ["h","off","Off / away"],["r","off","",null]];
     ROWS.forEach(([kind,k,label,key])=>{
       if(kind==="h"){ h+='<tr class="h-'+k+'"><td class="sh">'+label+'</td>'+ds.map(()=>"<td></td>").join("")+'</tr>'; return; }
       if(k==="pm"&&key==="t2"&&!C.some(c=>c.pm.t2.length)) return;
@@ -740,33 +744,22 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
         const v = key ? C[i][k][key] : C[i].off, now=iso===today?" now":"";
         if(!v.length){
           const cover = key==="staff" && k!=="nt" && C[i][k].admin.length;
-          return '<td class="v dash'+now+'">—'+(cover?'<span class="sub">admin covers</span>':'')+'</td>';
+          return '<td class="v dash'+now+'">—'+(cover?'<span class="sub blk">admin covers</span>':'')+'</td>';
         }
         return '<td class="v'+now+'">'+v.join("<br>")+'</td>';
       }).join("")+'</tr>';
     });
     $("r-table").innerHTML=h+'</tbody>';
-    // open at today (or the nearest saved date)
-    if(!scrolled){
+    if(!scrolled){   // open at today (or the nearest saved date)
       const box=$("r-box"), ths=[...box.querySelectorAll("thead th[data-iso]")];
       const t=ths.find(th=>th.dataset.iso>=today) || ths[ths.length-1];
-      if(t && box.offsetParent){
-        const first=ths[0].getBoundingClientRect().left;
-        box.scrollLeft=Math.max(0,t.getBoundingClientRect().left-first); scrolled=true;
-      }
+      if(t && box.offsetParent){ box.scrollLeft=Math.max(0,t.getBoundingClientRect().left-ths[0].getBoundingClientRect().left); scrolled=true; }
     }
-    // sources
-    const st=[...new Set(ds.map(d=>R.days[d].status))];
-    const span=s=>{ const x=ds.filter(d=>R.days[d].status===s); return dayLbl(x[0])+" – "+dayLbl(x[x.length-1]); };
     const u=R.updatedAt?Date.parse(R.updatedAt):null;
-    $("r-src").textContent=st.map(s=>span(s)+": "+((R.notes||{})[s]||s)).join(" · ")+(u?" · Updated "+new Date(u+IST_MS).toLocaleDateString("en-GB",{timeZone:"UTC",day:"numeric",month:"short"}):"")+(offline?" · Offline copy":"");
+    $("r-src").textContent=(ds.length?dayLbl(ds[0])+" – "+dayLbl(ds[ds.length-1]):"")+(R.source?" · "+R.source:"")+(u?" · Updated "+new Date(u+IST_MS).toLocaleDateString("en-GB",{timeZone:"UTC",day:"numeric",month:"short"}):"")+(offline?" · Offline copy":"");
   }
 
-  function render(){
-    if(!R){ return; }
-    renderToday();
-    if(!$("view-roster").hidden) renderGrid();
-  }
+  function render(){ if(!R) return; renderToday(); if(!$("view-roster").hidden) renderGrid(); }
   async function load(){
     try{
       const res=await fetch("roster.json?t="+Date.now(),{cache:"no-store"});
