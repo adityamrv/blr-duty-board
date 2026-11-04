@@ -142,7 +142,30 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 .note.bad{color:var(--warn);font-weight:600}
 
 /* Tabs: Flights/BA and Roster */
-#tabs{grid-template-columns:1fr 1fr}
+#tabs{grid-template-columns:1.3fr 1fr 1fr}
+#s-period{grid-template-columns:1fr 1fr}
+.chg{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:2px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.srow select{font:inherit;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0;max-width:60%}
+.pie{display:grid;grid-template-columns:minmax(0,170px) 1fr;gap:14px;align-items:center}
+.pie svg{width:100%;height:auto;display:block}
+.pie path{stroke:var(--surface);stroke-width:2;transition:opacity .15s}
+.pie svg:hover path{opacity:.55} .pie svg path:hover{opacity:1}
+.pie .ctr{font-family:var(--display);font-weight:700;font-size:34px;fill:var(--ink)}
+.pie .ctr2{font-size:11px;fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.plegend{display:flex;flex-direction:column;gap:5px;font-size:.88rem;font-variant-numeric:tabular-nums}
+.plegend div{display:flex;align-items:center;gap:7px}
+.plegend i{flex:none;width:11px;height:11px;border-radius:3px}
+.plegend b{margin-left:auto;font-weight:600}
+.plegend span.p{color:var(--muted);font-size:.78rem;width:3.2em;text-align:right}
+.stab th,.stab td{text-align:center;padding:8px 4px}
+.stab th:first-child,.stab td:first-child{text-align:left}
+.stab tr.sel td{background:var(--accent-soft)}
+.stab td.z{color:var(--muted)}
+.logi{padding:10px 12px;border-bottom:1px solid var(--line);font-size:.88rem}
+.logi:last-child{border-bottom:0}
+.logi .w{font-weight:600}
+.logi .m{color:var(--muted);font-size:.78rem}
 #tabs .lbl{font-size:1.1rem}
 .view{display:flex;flex-direction:column;gap:14px}
 
@@ -207,7 +230,31 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   <div class="seg" id="tabs" role="group" aria-label="Section">
     <button type="button" id="tab-ba" aria-pressed="true"><span class="lbl">Flights · BA</span></button>
     <button type="button" id="tab-roster" aria-pressed="false"><span class="lbl">Roster</span></button>
+    <button type="button" id="tab-stats" aria-pressed="false"><span class="lbl">Stats</span></button>
   </div>
+
+  <section class="view" id="view-stats" hidden>
+    <div class="seg" id="s-period" role="group" aria-label="Period">
+      <button type="button" data-p="sofar" aria-pressed="true"><span class="lbl">So far</span><span class="sub" id="s-sofar"></span></button>
+      <button type="button" data-p="all" aria-pressed="false"><span class="lbl">Whole roster</span><span class="sub" id="s-all"></span></button>
+    </div>
+    <div class="today">
+      <div class="srow">
+        <label class="k" for="s-person">Duty split for</label>
+        <select id="s-person"></select>
+      </div>
+      <div class="pie">
+        <svg id="s-pie" viewBox="0 0 200 200" role="img" aria-labelledby="s-pie-t"><title id="s-pie-t">Duty split</title></svg>
+        <div class="plegend" id="s-legend"></div>
+      </div>
+      <div class="note" id="s-extra"></div>
+    </div>
+    <div class="grp">Team count</div>
+    <div class="tablebox"><table class="stab" id="s-table"></table></div>
+    <div class="grp">Change log</div>
+    <div class="cl" id="s-log"></div>
+    <div class="note">Counts use the roster with every logged change applied. Tell Claude in chat about any change (swap, extra duty, call-in, leave) and it is logged here.</div>
+  </section>
 
   <section class="view" id="view-roster" hidden>
     <div class="today" id="r-today"><div class="k">Loading roster…</div></div>
@@ -216,6 +263,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       <span><i style="background:var(--pm)"></i>Evening</span>
       <span><i style="background:var(--nt)"></i>Night</span>
       <span><span class="tag t2">T2</span> Terminal 2</span>
+      <span><span class="chg"></span> Changed</span>
     </div>
     <div class="rbox" id="r-box"><table id="r-table"></table></div>
     <div class="note" id="r-src"></div>
@@ -659,14 +707,18 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   let R = null, offline = false, scrolled = false;
 
   // tabs, last choice remembered on this phone
+  const TABS=["ba","roster","stats"];
   function showTab(t){
-    $("view-ba").hidden = t!=="ba"; $("view-roster").hidden = t!=="roster";
-    $("tab-ba").setAttribute("aria-pressed",String(t==="ba")); $("tab-roster").setAttribute("aria-pressed",String(t==="roster"));
+    TABS.forEach(k=>{ $("view-"+k).hidden = t!==k; $("tab-"+k).setAttribute("aria-pressed",String(t===k)); });
     try{ localStorage.setItem("tab",t); }catch(e){}
-    if(t==="roster"){ scrolled=false; render(); }
+    if(t==="roster") scrolled=false;
+    if(t!=="ba") render();
   }
-  $("tab-ba").addEventListener("click",()=>showTab("ba"));
-  $("tab-roster").addEventListener("click",()=>showTab("roster"));
+  TABS.forEach(k=>$("tab-"+k).addEventListener("click",()=>showTab(k)));
+
+  // the roster as worked: the uploaded cell, replaced by the latest logged change for that person and date
+  const changesFor = (iso,n) => (R.changes||[]).filter(c=>c.date===iso && c.name===n);
+  function cellOf(iso,n){ const ch=changesFor(iso,n); if(ch.length) return ch[ch.length-1].to; const d=R.days[iso]; return d ? d[n] : undefined; }
 
   const isoIST = off => new Date(Date.now()+IST_MS+off*86400000).toISOString().slice(0,10);
   const dayLbl = iso => new Date(iso+"T00:00:00Z").toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short",day:"numeric",month:"short"});
@@ -693,13 +745,15 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     if(c && c.t2) h='<span class="tag t2">T2</span> '+h;
     if(c && c.odd) h+=' <span class="sub">'+c.time+'</span>';
     if(c && c.label) h+=' <span class="sub">'+esc(c.label)+'</span>';
+    if(c && c.chg) h+='<span class="chg" title="Changed"></span>';
     return h;
   }
   function slots(iso){
     const day=R.days[iso]; if(!day) return null;
     const c={am:{doctor:[],staff:[],admin:[],t2:[]},pm:{doctor:[],staff:[],admin:[],t2:[]},nt:{doctor:[],staff:[],admin:[],t2:[]},off:[]};
     R.people.forEach(p=>{
-      const x=parse(day[p.n]); if(!x) return;
+      const x=parse(cellOf(iso,p.n)); if(!x) return;
+      if(changesFor(iso,p.n).length) x.chg=true;
       if(x.slot==="off"){ c.off.push(name(p,x)); return; }
       if(x.t2) c[x.slot].t2.push(name(p,x)); else c[x.slot][p.role].push(name(p,x));
     });
@@ -709,7 +763,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   function renderToday(){
     const el=$("r-today"), today=isoIST(0), tom=isoIST(1);
     const card=(lbl,iso)=>{
-      const d=R.days[iso], x=d?parse(d[R.me]):null;
+      const x=R.days[iso]?parse(cellOf(iso,R.me)):null;
       let big="Not in roster", small="", cls="";
       if(x && x.slot==="off"){ big=x.label||"Off"; }
       else if(x){ big=SLOTNAME[x.slot]+(x.t2?" · T2":""); small=x.time; cls=x.slot; }
@@ -759,7 +813,64 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     $("r-src").textContent=(ds.length?dayLbl(ds[0])+" – "+dayLbl(ds[ds.length-1]):"")+(R.source?" · "+R.source:"")+(u?" · Updated "+new Date(u+IST_MS).toLocaleDateString("en-GB",{timeZone:"UTC",day:"numeric",month:"short"}):"")+(offline?" · Offline copy":"");
   }
 
-  function render(){ if(!R) return; renderToday(); if(!$("view-roster").hidden) renderGrid(); }
+  // ---------- Stats: duty split per person (pie), team counts, change log ----------
+  const CATS=[["am","Morning","var(--am)"],["pm","Evening","var(--pm)"],["nt","Night","var(--nt)"],["off","Off","var(--muted)"],["lv","Leave","#3DBE7A"],["oth","Other (DEL)","#B08A63"]];
+  let period="sofar", person=null;
+  function catOf(x){ if(!x) return null; if(x.slot!=="off") return x.slot; if(!x.label) return "off"; return /^(leave|comp\s*off|ph)$/i.test(x.label) ? "lv" : "oth"; }
+  function countsFor(n, ds){
+    const k={am:0,pm:0,nt:0,off:0,lv:0,oth:0,t2:0,chg:0};
+    ds.forEach(iso=>{ const x=parse(cellOf(iso,n)), c=catOf(x); if(!c) return; k[c]++; if(x.t2) k.t2++; if(changesFor(iso,n).length) k.chg++; });
+    return k;
+  }
+  function arc(cx,cy,r,a0,a1){
+    const p=a=>[cx+r*Math.sin(a), cy-r*Math.cos(a)];
+    if(a1-a0>=2*Math.PI-1e-6) return "M"+cx+","+(cy-r)+"A"+r+","+r+" 0 1 1 "+(cx-0.01)+","+(cy-r)+"Z";
+    const [x0,y0]=p(a0),[x1,y1]=p(a1);
+    return "M"+cx+","+cy+"L"+x0.toFixed(2)+","+y0.toFixed(2)+"A"+r+","+r+" 0 "+(a1-a0>Math.PI?1:0)+" 1 "+x1.toFixed(2)+","+y1.toFixed(2)+"Z";
+  }
+  function renderStats(){
+    const all=Object.keys(R.days).sort(), today=isoIST(0), sofar=all.filter(d=>d<=today);
+    const ds = period==="sofar" ? sofar : all;
+    $("s-sofar").textContent = sofar.length ? dayLbl(sofar[0]).slice(4)+" – "+dayLbl(sofar[sofar.length-1]).slice(4) : "none yet";
+    $("s-all").textContent = all.length ? dayLbl(all[0]).slice(4)+" – "+dayLbl(all[all.length-1]).slice(4) : "";
+    document.querySelectorAll("#s-period button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.p===period)));
+    const sel=$("s-person");
+    if(!sel.options.length){
+      R.people.forEach(p=>{ const o=document.createElement("option"); o.value=p.n; o.textContent=(p.role==="doctor"?"Dr ":"")+p.n+(p.n===R.me?" (you)":""); sel.appendChild(o); });
+      sel.addEventListener("change",()=>{ person=sel.value; renderStats(); });
+    }
+    if(!person) person=R.me; sel.value=person;
+    // pie
+    const k=countsFor(person, ds), shown=CATS.filter(c=>k[c[0]]>0), tot=shown.reduce((s,c)=>s+k[c[0]],0);
+    let a=0, svg='<title id="s-pie-t">Duty split for '+esc(person)+'</title>';
+    shown.forEach(([id,lbl,col])=>{
+      const a1=a+2*Math.PI*k[id]/tot;
+      svg+='<path d="'+arc(100,100,96,a,a1)+'" style="fill:'+col+'"><title>'+lbl+': '+k[id]+' of '+tot+' days</title></path>'; a=a1;
+    });
+    const duty=k.am+k.pm+k.nt;
+    svg+='<circle cx="100" cy="100" r="54" style="fill:var(--surface)"/><text class="ctr" x="100" y="104" text-anchor="middle">'+duty+'</text><text class="ctr2" x="100" y="124" text-anchor="middle">duties</text>';
+    $("s-pie").innerHTML = tot ? svg : '<text x="100" y="105" text-anchor="middle" style="fill:var(--muted);font-size:13px">No days in this period</text>';
+    $("s-legend").innerHTML = CATS.map(([id,lbl,col])=>'<div><i style="background:'+col+'"></i>'+lbl+'<b>'+k[id]+'</b><span class="p">'+(tot?Math.round(100*k[id]/tot)+"%":"")+'</span></div>').join("");
+    $("s-extra").textContent = ds.length+" days · Leave includes comp off and PH · Terminal 2 duties: "+k.t2+(k.chg?" · changed days: "+k.chg:"");
+    // team table
+    let h='<thead><tr><th>Name</th><th>Morn</th><th>Eve</th><th>Night</th><th>T2</th><th>Off</th><th>Leave</th></tr></thead><tbody>';
+    R.people.forEach(p=>{
+      const c=countsFor(p.n, ds), td=v=>'<td'+(v?'':' class="z"')+'>'+v+'</td>';
+      h+='<tr class="'+(p.n===person?"sel":"")+'" data-n="'+esc(p.n)+'"><td>'+(p.role==="doctor"?"Dr ":"")+esc(p.n)+'</td>'+td(c.am)+td(c.pm)+td(c.nt)+td(c.t2)+td(c.off)+td(c.lv+c.oth)+'</tr>';
+    });
+    $("s-table").innerHTML=h+'</tbody>';
+    $("s-table").querySelectorAll("tbody tr").forEach(tr=>{ tr.style.cursor="pointer"; tr.addEventListener("click",()=>{ person=tr.dataset.n; renderStats(); window.scrollTo({top:0,behavior:"smooth"}); }); });
+    // change log, newest first
+    const log=(R.changes||[]).slice().reverse();
+    const show=v=>{ const x=parse(v); if(!x) return "—"; if(x.slot==="off") return x.label||"Off"; return (x.t2?"T2 ":"")+SLOTNAME[x.slot]+" "+x.time; };
+    $("s-log").innerHTML = log.length ? log.map(c=>{
+      const p=R.people.find(q=>q.n===c.name)||{n:c.name};
+      return '<div class="logi"><div class="w">'+dayLbl(c.date)+' · '+(p.role==="doctor"?"Dr ":"")+esc(c.name)+'</div><div>'+esc(show(c.from))+' → <b>'+esc(show(c.to))+'</b>'+(c.note?' · '+esc(c.note):'')+'</div>'+(c.logged?'<div class="m">Logged '+esc(c.logged.replace("T"," ").slice(0,16))+'</div>':'')+'</div>';
+    }).join("") : '<div class="logi m">No changes logged yet.</div>';
+  }
+  document.querySelectorAll("#s-period button").forEach(b=>b.addEventListener("click",()=>{ period=b.dataset.p; renderStats(); }));
+
+  function render(){ if(!R) return; renderToday(); if(!$("view-roster").hidden) renderGrid(); if(!$("view-stats").hidden) renderStats(); }
   async function load(){
     try{
       const res=await fetch("roster.json?t="+Date.now(),{cache:"no-store"});
@@ -774,7 +885,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     render();
   }
   let t0="ba"; try{ t0=localStorage.getItem("tab")||"ba"; }catch(e){}
-  showTab(t0==="roster"?"roster":"ba");
+  showTab(["ba","roster","stats"].includes(t0)?t0:"ba");
   load();
   $("refresh").addEventListener("click",load);
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") load(); });
