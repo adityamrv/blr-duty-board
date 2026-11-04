@@ -1,6 +1,6 @@
 // Duty Board service worker: app shell works offline; flight data is fetched fresh
 // when online and falls back to the last saved copy when offline.
-const SHELL = "duty-board-shell-v9";
+const SHELL = "duty-board-shell-v10";
 const DATA = "duty-board-data";
 const SHELL_FILES = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
@@ -17,13 +17,14 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;
-  if (url.pathname.endsWith("/data.json")) {
+  const dataFile = ["data.json", "roster.json"].find(f => url.pathname.endsWith("/" + f));
+  if (dataFile) {
     // network first, saved copy when offline
     e.respondWith(fetch(e.request, { cache: "no-store" }).then(res => {
       const copy = res.clone();
-      caches.open(DATA).then(c => c.put("data.json", copy));
+      caches.open(DATA).then(c => c.put(dataFile, copy));
       return res;
-    }).catch(() => caches.open(DATA).then(c => c.match("data.json")).then(r => r || Response.error())));
+    }).catch(() => caches.open(DATA).then(c => c.match(dataFile)).then(r => r || Response.error())));
     return;
   }
   // app files: always ask the server first (skip the browser's 10-minute copy) so updates arrive at once

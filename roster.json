@@ -1,0 +1,446 @@
+{
+ "updatedAt": "2026-11-04T07:00:00+05:30",
+ "me": "Aditya",
+ "notes": {
+  "roster": "From the roster saved earlier (9–16 Nov)",
+  "draft": "Draft made by Claude on 31 Oct, not yet approved"
+ },
+ "people": [
+  {
+   "n": "Amit",
+   "role": "doctor",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Venkatesan",
+   "role": "doctor",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Arpitha",
+   "role": "doctor",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Aditya",
+   "role": "doctor",
+   "lvl": "new"
+  },
+  {
+   "n": "Dakshina",
+   "role": "staff",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Sandesh",
+   "role": "staff",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Sahil",
+   "role": "staff",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Dhiraj",
+   "role": "staff",
+   "lvl": "intermediate"
+  },
+  {
+   "n": "Anusree",
+   "role": "staff",
+   "lvl": "intermediate"
+  },
+  {
+   "n": "Abhijeet",
+   "role": "staff",
+   "lvl": "new"
+  },
+  {
+   "n": "Pema",
+   "role": "admin",
+   "lvl": "experienced"
+  },
+  {
+   "n": "Daris",
+   "role": "admin",
+   "lvl": "experienced"
+  }
+ ],
+ "days": {
+  "2026-11-09": {
+   "status": "roster",
+   "s": {
+    "Amit": "X",
+    "Venkatesan": "N",
+    "Arpitha": "O",
+    "Aditya": "G",
+    "Dakshina": "M2",
+    "Sandesh": "O",
+    "Dhiraj": "E1",
+    "Sahil": "N",
+    "Anusree": "O",
+    "Abhijeet": "G",
+    "Pema": "E1",
+    "Daris": "M"
+   }
+  },
+  "2026-11-10": {
+   "status": "roster",
+   "s": {
+    "Amit": "X",
+    "Venkatesan": "N",
+    "Arpitha": "M",
+    "Aditya": "E",
+    "Dakshina": "E1",
+    "Sandesh": "O",
+    "Dhiraj": "N",
+    "Sahil": "O",
+    "Anusree": "M2",
+    "Abhijeet": "G",
+    "Pema": "X",
+    "Daris": "M"
+   }
+  },
+  "2026-11-11": {
+   "status": "roster",
+   "s": {
+    "Amit": "M",
+    "Venkatesan": "O",
+    "Arpitha": "E",
+    "Aditya": "N",
+    "Dakshina": "E1",
+    "Sandesh": "M1",
+    "Dhiraj": "N",
+    "Sahil": "O",
+    "Anusree": "M2",
+    "Abhijeet": "G",
+    "Pema": "G",
+    "Daris": "E2"
+   }
+  },
+  "2026-11-12": {
+   "status": "roster",
+   "s": {
+    "Amit": "M",
+    "Venkatesan": "O",
+    "Arpitha": "E",
+    "Aditya": "N",
+    "Dakshina": "N",
+    "Sandesh": "M1",
+    "Dhiraj": "O",
+    "Sahil": "O",
+    "Anusree": "M2",
+    "Abhijeet": "G",
+    "Pema": "G",
+    "Daris": "E1"
+   }
+  },
+  "2026-11-13": {
+   "status": "roster",
+   "s": {
+    "Amit": "X",
+    "Venkatesan": "X",
+    "Arpitha": "G",
+    "Aditya": "N",
+    "Dakshina": "N",
+    "Sandesh": "M1",
+    "Dhiraj": "O",
+    "Sahil": "M2",
+    "Anusree": "E1",
+    "Abhijeet": "G",
+    "Pema": "G",
+    "Daris": "E1"
+   }
+  },
+  "2026-11-14": {
+   "status": "roster",
+   "s": {
+    "Amit": "O",
+    "Venkatesan": "G",
+    "Arpitha": "N",
+    "Aditya": "O",
+    "Dakshina": "O",
+    "Sandesh": "N",
+    "Dhiraj": "M2",
+    "Sahil": "M1",
+    "Anusree": "E1",
+    "Abhijeet": "O",
+    "Pema": "O",
+    "Daris": "E1"
+   }
+  },
+  "2026-11-15": {
+   "status": "roster",
+   "s": {
+    "Amit": "O",
+    "Venkatesan": "G",
+    "Arpitha": "N",
+    "Aditya": "O",
+    "Dakshina": "O",
+    "Sandesh": "N",
+    "Dhiraj": "M2",
+    "Sahil": "M1",
+    "Anusree": "E2",
+    "Abhijeet": "M1",
+    "Pema": "E1",
+    "Daris": "O"
+   }
+  },
+  "2026-11-16": {
+   "status": "roster",
+   "s": {
+    "Amit": "E",
+    "Venkatesan": "N",
+    "Arpitha": "O",
+    "Aditya": "M",
+    "Dakshina": "M2",
+    "Sandesh": "O",
+    "Dhiraj": "M1",
+    "Sahil": "N",
+    "Anusree": "E1",
+    "Abhijeet": "E1",
+    "Pema": "G",
+    "Daris": "M"
+   }
+  },
+  "2026-11-17": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "M1",
+    "Sandesh": "O",
+    "Dhiraj": "M2",
+    "Sahil": "N",
+    "Anusree": "O",
+    "Abhijeet": "O",
+    "Pema": "G",
+    "Daris": "E1",
+    "Amit": "E",
+    "Venkatesan": "N",
+    "Arpitha": "O",
+    "Aditya": "M"
+   }
+  },
+  "2026-11-18": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "N",
+    "Sandesh": "M2",
+    "Dhiraj": "E2",
+    "Sahil": "O",
+    "Anusree": "O",
+    "Abhijeet": "O",
+    "Pema": "G",
+    "Daris": "E1",
+    "Amit": "E",
+    "Venkatesan": "O",
+    "Arpitha": "M",
+    "Aditya": "N"
+   }
+  },
+  "2026-11-19": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "N",
+    "Sandesh": "M2",
+    "Dhiraj": "E1",
+    "Sahil": "O",
+    "Anusree": "O",
+    "Abhijeet": "O",
+    "Pema": "G",
+    "Daris": "E1",
+    "Amit": "E",
+    "Venkatesan": "O",
+    "Arpitha": "M",
+    "Aditya": "N"
+   }
+  },
+  "2026-11-20": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "O",
+    "Sandesh": "M1",
+    "Dhiraj": "O",
+    "Sahil": "M2",
+    "Anusree": "N",
+    "Abhijeet": "M1",
+    "Pema": "G",
+    "Daris": "E1",
+    "Amit": "E",
+    "Venkatesan": "M",
+    "Arpitha": "N",
+    "Aditya": "O"
+   }
+  },
+  "2026-11-21": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "O",
+    "Sandesh": "M1",
+    "Dhiraj": "O",
+    "Sahil": "M2",
+    "Anusree": "N",
+    "Abhijeet": "M1",
+    "Pema": "O",
+    "Daris": "E1",
+    "Amit": "E",
+    "Venkatesan": "M",
+    "Arpitha": "N",
+    "Aditya": "O"
+   }
+  },
+  "2026-11-22": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "M2",
+    "Sandesh": "N",
+    "Dhiraj": "M1",
+    "Sahil": "E1",
+    "Anusree": "O",
+    "Abhijeet": "E1",
+    "Pema": "E2",
+    "Daris": "O",
+    "Amit": "O",
+    "Venkatesan": "M",
+    "Arpitha": "N",
+    "Aditya": "E"
+   }
+  },
+  "2026-11-23": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "M2",
+    "Sandesh": "N",
+    "Dhiraj": "M1",
+    "Sahil": "E1",
+    "Anusree": "O",
+    "Abhijeet": "E1",
+    "Pema": "E1",
+    "Daris": "G",
+    "Amit": "M",
+    "Venkatesan": "N",
+    "Arpitha": "O",
+    "Aditya": "E"
+   }
+  },
+  "2026-11-24": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "E1",
+    "Sandesh": "O",
+    "Dhiraj": "N",
+    "Sahil": "N",
+    "Anusree": "M2",
+    "Abhijeet": "E1",
+    "Pema": "E1",
+    "Daris": "G",
+    "Amit": "M",
+    "Venkatesan": "N",
+    "Arpitha": "O",
+    "Aditya": "E"
+   }
+  },
+  "2026-11-25": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "E1",
+    "Sandesh": "O",
+    "Dhiraj": "N",
+    "Sahil": "N",
+    "Anusree": "M2",
+    "Abhijeet": "E1",
+    "Pema": "E2",
+    "Daris": "G",
+    "Amit": "O",
+    "Venkatesan": "N",
+    "Arpitha": "M",
+    "Aditya": "E"
+   }
+  },
+  "2026-11-26": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "N",
+    "Sandesh": "M1",
+    "Dhiraj": "O",
+    "Sahil": "O",
+    "Anusree": "M2",
+    "Abhijeet": "O",
+    "Pema": "E1",
+    "Daris": "G",
+    "Amit": "E",
+    "Venkatesan": "O",
+    "Arpitha": "M",
+    "Aditya": "N"
+   }
+  },
+  "2026-11-27": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "N",
+    "Sandesh": "M2",
+    "Dhiraj": "O",
+    "Sahil": "O",
+    "Anusree": "M1",
+    "Abhijeet": "O",
+    "Pema": "E1",
+    "Daris": "G",
+    "Amit": "E",
+    "Venkatesan": "O",
+    "Arpitha": "M",
+    "Aditya": "N"
+   }
+  },
+  "2026-11-28": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "O",
+    "Sandesh": "E1",
+    "Dhiraj": "M2",
+    "Sahil": "M1",
+    "Anusree": "N",
+    "Abhijeet": "M1",
+    "Pema": "O",
+    "Daris": "G",
+    "Amit": "E",
+    "Venkatesan": "M",
+    "Arpitha": "N",
+    "Aditya": "O"
+   }
+  },
+  "2026-11-29": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "O",
+    "Sandesh": "E1",
+    "Dhiraj": "M2",
+    "Sahil": "M1",
+    "Anusree": "N",
+    "Abhijeet": "M1",
+    "Pema": "E2",
+    "Daris": "O",
+    "Amit": "E",
+    "Venkatesan": "M",
+    "Arpitha": "N",
+    "Aditya": "O"
+   }
+  },
+  "2026-11-30": {
+   "status": "draft",
+   "s": {
+    "Dakshina": "M2",
+    "Sandesh": "N",
+    "Dhiraj": "N",
+    "Sahil": "E1",
+    "Anusree": "O",
+    "Abhijeet": "E1",
+    "Pema": "E1",
+    "Daris": "G",
+    "Amit": "E",
+    "Venkatesan": "M",
+    "Arpitha": "O",
+    "Aditya": "N"
+   }
+  }
+ }
+}

@@ -140,6 +140,56 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 .empty{padding:22px 16px;text-align:center;color:var(--muted)}
 .note{font-size:.8rem;color:var(--muted)}
 .note.bad{color:var(--warn);font-weight:600}
+
+/* Tabs: Flights/BA and Roster */
+#tabs{grid-template-columns:1fr 1fr}
+#tabs .lbl{font-size:1.1rem}
+.view{display:flex;flex-direction:column;gap:14px}
+
+/* Roster: shift colours as in the approved roster page */
+:root{--am:#FFC933;--am-soft:#3A2F10;--am-ink:#2E2000;--pm:#FF5C96;--pm-soft:#3E1828;--pm-ink:#fff;
+  --nt:#6A5CFF;--nt-soft:#25205A;--nt-ink:#fff;--t2:#2FD3C5;--t2-ink:#05201E;--new:#FF6B7D}
+@media (prefers-color-scheme: light){:root{--am:#FFC21A;--am-soft:#FFF1C2;--am-ink:#3D2A00;--pm:#FF4F8B;--pm-soft:#FFDBE8;
+  --nt:#3B2FC9;--nt-soft:#DFDCFF;--t2:#00A396;--t2-ink:#fff;--new:#D7263D}}
+.today{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.today .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mine{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mine .c{border-radius:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--line)}
+.mine .d{font-size:.75rem;color:var(--muted);font-weight:600}
+.mine .s{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.1;text-transform:uppercase;letter-spacing:.02em}
+.mine .c.am{background:var(--am);color:var(--am-ink);border-color:var(--am)} .mine .c.pm{background:var(--pm);color:var(--pm-ink);border-color:var(--pm)}
+.mine .c.nt{background:var(--nt);color:var(--nt-ink);border-color:var(--nt)}
+.mine .c.am .d,.mine .c.pm .d,.mine .c.nt .d{color:inherit;opacity:.8}
+.crew{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.88rem;align-items:baseline}
+.crew .t{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:.95rem;border-left:4px solid;padding-left:6px}
+.crew .t.am{border-color:var(--am)} .crew .t.pm{border-color:var(--pm)} .crew .t.nt{border-color:var(--nt)}
+.crew .sub{color:var(--muted);font-size:.8rem}
+.tag{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.05em;border-radius:4px;padding:1px 5px;vertical-align:1px}
+.tag.t2{background:var(--t2);color:var(--t2-ink)}
+.tag.nw{color:var(--new);padding:0 0 0 3px}
+.tag.dr{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);margin-left:4px}
+.me{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+
+.rbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:78vh;-webkit-overflow-scrolling:touch}
+.rbox table{width:auto;min-width:100%;border-collapse:separate;border-spacing:0}
+.rbox th,.rbox td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0}
+.rbox thead th{position:sticky;top:0;z-index:3;background:var(--surface);min-width:96px;text-align:center;padding:7px 4px 5px;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:2px solid var(--ink)}
+.rbox thead th b{display:block;font-family:var(--display);font-size:1.25rem;color:var(--ink);letter-spacing:0;line-height:1.05;font-weight:700}
+.rbox thead th.we b,.rbox thead th.we{color:var(--pm)}
+.rbox thead th.now{background:var(--accent-soft)} .rbox thead th.now b{color:var(--accent)}
+.rbox th.corner{left:0;z-index:4;min-width:0;width:1%}
+.rbox td.lab{position:sticky;left:0;z-index:2;background:var(--surface);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 8px;white-space:nowrap}
+.rbox td.sh{position:sticky;left:0;z-index:2;padding:5px 8px;font-family:var(--display);font-weight:700;font-size:1rem;letter-spacing:.06em;text-transform:uppercase}
+.rbox tr.h-am td{background:var(--am);color:var(--am-ink)} .rbox tr.h-pm td{background:var(--pm);color:var(--pm-ink)}
+.rbox tr.h-nt td{background:var(--nt);color:var(--nt-ink)} .rbox tr.h-off td{background:var(--line);color:var(--muted)}
+.rbox tr.am td.v{background:var(--am-soft)} .rbox tr.pm td.v{background:var(--pm-soft)} .rbox tr.nt td.v{background:var(--nt-soft)}
+.rbox td.v{padding:5px 6px;text-align:center;font-weight:600;font-size:.85rem;line-height:1.25;height:32px}
+.rbox td.v .sub{display:block;font-size:.66rem;font-weight:500;color:var(--muted)}
+.rbox td.v.dash{color:var(--muted);font-weight:400}
+.rbox tr.off td.v{font-weight:400;font-size:.78rem;color:var(--muted)}
+.rbox td.v.now{box-shadow:inset 2px 0 0 var(--accent),inset -2px 0 0 var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
 </style>
 </head>
 <body>
@@ -155,6 +205,27 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     </div>
   </header>
 
+  <div class="seg" id="tabs" role="group" aria-label="Section">
+    <button type="button" id="tab-ba" aria-pressed="true"><span class="lbl">Flights · BA</span></button>
+    <button type="button" id="tab-roster" aria-pressed="false"><span class="lbl">Roster</span></button>
+  </div>
+
+  <section class="view" id="view-roster" hidden>
+    <div class="today" id="r-today"><div class="k">Loading roster…</div></div>
+    <div class="legend">
+      <span><i style="background:var(--am)"></i>Morning</span>
+      <span><i style="background:var(--pm)"></i>Evening</span>
+      <span><i style="background:var(--nt)"></i>Night</span>
+      <span><span class="tag t2">T2</span> Terminal 2</span>
+      <span><span class="tag nw">NEW</span> New joiner</span>
+      <span><span class="tag dr">DRAFT</span> Not approved yet</span>
+    </div>
+    <div class="rbox" id="r-box"><table id="r-table"></table></div>
+    <div class="note" id="r-src"></div>
+    <div class="note">Scroll sideways for more dates. Today's column is outlined. Your name is underlined.</div>
+  </section>
+
+  <section class="view" id="view-ba">
   <div class="seg" id="days" role="group" aria-label="Day the shift starts"></div>
   <div class="seg" id="shifts" role="group" aria-label="Shift"></div>
 
@@ -171,6 +242,7 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   <div class="note" id="status"></div>
   <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
+  </section>
 </div>
 
 <button class="fab" id="bapos-open" type="button" aria-haspopup="dialog">BA +ve</button>
@@ -580,6 +652,140 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("bapos").hidden) $("bapos-close").click(); });
 
   tickTimer(); setInterval(tickTimer, 500);
+})();
+</script>
+<script>
+(function(){
+  // ---------- Tabs + duty roster (roster.json) ----------
+  const $ = id => document.getElementById(id);
+  const IST_MS = 330*60000;
+  let R = null, offline = false, scrolled = false;
+
+  // tabs, last choice remembered on this phone
+  function showTab(t){
+    $("view-ba").hidden = t!=="ba"; $("view-roster").hidden = t!=="roster";
+    $("tab-ba").setAttribute("aria-pressed",String(t==="ba")); $("tab-roster").setAttribute("aria-pressed",String(t==="roster"));
+    try{ localStorage.setItem("tab",t); }catch(e){}
+    if(t==="roster"){ scrolled=false; render(); }
+  }
+  $("tab-ba").addEventListener("click",()=>showTab("ba"));
+  $("tab-roster").addEventListener("click",()=>showTab("roster"));
+
+  const isoIST = off => { const d=new Date(Date.now()+IST_MS+off*86400000); return d.toISOString().slice(0,10); };
+  const dayLbl = iso => new Date(iso+"T00:00:00Z").toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short",day:"numeric",month:"short"});
+  const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  // shift codes: M/M1 morning T1, M2 morning T2, G general (counts as morning), E/E1 evening T1, E2 evening T2, N night, O off, X away
+  const SLOT = {M:["am",""],M1:["am",""],G:["am","general"],M2:["am","t2"],E:["pm",""],E1:["pm",""],E2:["pm","t2"],N:["nt",""]};
+  const MYLBL = {M:"Morning",M1:"Morning",M2:"Morning · T2",G:"General",E:"Evening",E1:"Evening",E2:"Evening · T2",N:"Night",O:"Off",X:"Away"};
+
+  function name(p, opts){
+    opts=opts||{};
+    let h = (p.role==="doctor"?"Dr ":"")+esc(p.n);
+    if(R && p.n===R.me) h = '<span class="me">'+h+'</span>';
+    if(p.lvl==="new") h += '<span class="tag nw">NEW</span>';
+    if(opts.t2) h = '<span class="tag t2">T2</span> '+h;
+    if(opts.gen) h += ' <span class="sub">general</span>';
+    return h;
+  }
+  function slots(iso){
+    const day=R.days[iso]; if(!day) return null;
+    const c={am:{doctor:[],staff:[],admin:[],t2:[]},pm:{doctor:[],staff:[],admin:[],t2:[]},nt:{doctor:[],staff:[],admin:[],t2:[]},off:[]};
+    R.people.forEach(p=>{
+      const code=day.s[p.n]; if(!code) return;
+      if(code==="O"||code==="X"){ c.off.push(name(p)+(code==="X"?' <span class="sub">away</span>':"")); return; }
+      const s=SLOT[code]; if(!s) return;
+      if(s[1]==="t2") c[s[0]].t2.push(name(p,{t2:true}));
+      else c[s[0]][p.role].push(name(p,{gen:s[1]==="general"}));
+    });
+    return c;
+  }
+
+  function renderToday(){
+    const el=$("r-today"), today=isoIST(0), tom=isoIST(1);
+    const mine = iso => { const d=R.days[iso]; return d ? d.s[R.me] : null; };
+    const card = (lbl, iso) => {
+      const code=mine(iso), cls = code && SLOT[code] ? SLOT[code][0] : "";
+      const dr = R.days[iso] && R.days[iso].status==="draft" ? ' <span class="tag dr">DRAFT</span>' : "";
+      return '<div class="c '+cls+'"><div class="d">'+lbl+' · '+dayLbl(iso)+dr+'</div><div class="s">'+(code?(MYLBL[code]||code):"Not in roster")+'</div></div>';
+    };
+    let h='<div class="k">Your shift</div><div class="mine">'+card("Today",today)+card("Tomorrow",tom)+'</div>';
+    const c=slots(today);
+    if(c){
+      const line=(k,t)=>{ const a=c[k], ppl=[...a.doctor,...a.staff,...a.admin,...a.t2]; return '<span class="t '+k+'">'+t+'</span><span>'+(ppl.join(", ")||"—")+'</span>'; };
+      h+='<div class="k">On duty today</div><div class="crew">'+line("am","Morning")+line("pm","Evening")+line("nt","Night")+'</div>';
+    } else {
+      const ds=Object.keys(R.days).sort();
+      h+='<div class="note">No roster saved for today yet'+(ds.length?' (saved: '+dayLbl(ds[0])+' – '+dayLbl(ds[ds.length-1])+')':'')+'.</div>';
+    }
+    el.innerHTML=h;
+  }
+
+  function renderGrid(){
+    const ds=Object.keys(R.days).sort(), today=isoIST(0);
+    const C=ds.map(slots);
+    let h='<thead><tr><th class="corner"></th>'+ds.map(iso=>{
+      const d=new Date(iso+"T00:00:00Z"), dow=d.getUTCDay(), we=dow===0||dow===6;
+      const dr=R.days[iso].status==="draft"?'<br><span class="tag dr">DRAFT</span>':"";
+      return '<th class="'+(we?"we ":"")+(iso===today?"now":"")+'" data-iso="'+iso+'">'+d.toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short"})+'<b>'+d.getUTCDate()+' '+d.toLocaleDateString("en-GB",{timeZone:"UTC",month:"short"})+'</b>'+dr+'</th>';
+    }).join("")+'</tr></thead><tbody>';
+    const ROWS=[["h","am","Morning"],["r","am","Doctor","doctor"],["r","am","Staff","staff"],["r","am","Admin","admin"],["r","am","Terminal 2","t2"],
+                ["h","pm","Evening"],["r","pm","Doctor","doctor"],["r","pm","Staff","staff"],["r","pm","Admin","admin"],["r","pm","Terminal 2","t2"],
+                ["h","nt","Night"],["r","nt","Doctor","doctor"],["r","nt","Staff","staff"],
+                ["h","off","Off"],["r","off","",null]];
+    ROWS.forEach(([kind,k,label,key])=>{
+      if(kind==="h"){ h+='<tr class="h-'+k+'"><td class="sh">'+label+'</td>'+ds.map(()=>"<td></td>").join("")+'</tr>'; return; }
+      if(k==="pm"&&key==="t2"&&!C.some(c=>c.pm.t2.length)) return;
+      h+='<tr class="'+k+'"><td class="lab">'+label+'</td>'+ds.map((iso,i)=>{
+        const v = key ? C[i][k][key] : C[i].off, now=iso===today?" now":"";
+        if(!v.length){
+          const cover = key==="staff" && k!=="nt" && C[i][k].admin.length;
+          return '<td class="v dash'+now+'">—'+(cover?'<span class="sub">admin covers</span>':'')+'</td>';
+        }
+        return '<td class="v'+now+'">'+v.join("<br>")+'</td>';
+      }).join("")+'</tr>';
+    });
+    $("r-table").innerHTML=h+'</tbody>';
+    // open at today (or the nearest saved date)
+    if(!scrolled){
+      const box=$("r-box"), ths=[...box.querySelectorAll("thead th[data-iso]")];
+      const t=ths.find(th=>th.dataset.iso>=today) || ths[ths.length-1];
+      if(t && box.offsetParent){
+        const first=ths[0].getBoundingClientRect().left;
+        box.scrollLeft=Math.max(0,t.getBoundingClientRect().left-first); scrolled=true;
+      }
+    }
+    // sources
+    const st=[...new Set(ds.map(d=>R.days[d].status))];
+    const span=s=>{ const x=ds.filter(d=>R.days[d].status===s); return dayLbl(x[0])+" – "+dayLbl(x[x.length-1]); };
+    const u=R.updatedAt?Date.parse(R.updatedAt):null;
+    $("r-src").textContent=st.map(s=>span(s)+": "+((R.notes||{})[s]||s)).join(" · ")+(u?" · Updated "+new Date(u+IST_MS).toLocaleDateString("en-GB",{timeZone:"UTC",day:"numeric",month:"short"}):"")+(offline?" · Offline copy":"");
+  }
+
+  function render(){
+    if(!R){ return; }
+    renderToday();
+    if(!$("view-roster").hidden) renderGrid();
+  }
+  async function load(){
+    try{
+      const res=await fetch("roster.json?t="+Date.now(),{cache:"no-store"});
+      if(!res.ok) throw new Error(res.status);
+      R=await res.json(); offline=false;
+      try{ localStorage.setItem("lastRoster",JSON.stringify(R)); }catch(e){}
+    }catch(e){
+      offline=true;
+      if(!R){ try{ R=JSON.parse(localStorage.getItem("lastRoster")||"null"); }catch(_){} }
+      if(!R){ $("r-today").innerHTML='<div class="k">Roster</div><div class="note bad">Could not load the roster. Connect to the internet and open this tab again.</div>'; return; }
+    }
+    render();
+  }
+  let t0="ba"; try{ t0=localStorage.getItem("tab")||"ba"; }catch(e){}
+  showTab(t0==="roster"?"roster":"ba");
+  load();
+  $("refresh").addEventListener("click",load);
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") load(); });
+  setInterval(render, 60000);
 })();
 </script>
 </body>
