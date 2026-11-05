@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T07:05:00+05:30",
+ "updatedAt": "2026-11-05T07:05:00+05:30",
  "me": "Aditya",
  "source": "Official BLR medical roster (photo, 4 Nov)",
  "people": [
@@ -118,10 +118,10 @@
    "Abhijeet": "1000-1830",
    "Pema": "0600-1430",
    "Daris": "0900-1730",
-   "Amit": "1330-2200",
-   "Venkatesan": "comp off",
+   "Amit": "0900-1730",
+   "Venkatesan": "0630-1500",
    "Arpitha": "2200-0630",
-   "Aditya": "0630-1500"
+   "Aditya": "1330-2200"
   },
   "2026-11-06": {
    "Dakshina": "O",
@@ -278,5 +278,30 @@
    "Aditya": "0630-1500"
   }
  },
- "changes": []
+ "changes": [
+  {
+   "date": "2026-11-05",
+   "name": "Aditya",
+   "from": "1330-2200",
+   "to": "0630-1500",
+   "note": "Updated roster (Thursday sheet)",
+   "logged": "2026-11-05T07:05+05:30"
+  },
+  {
+   "date": "2026-11-05",
+   "name": "Amit",
+   "from": "0900-1730",
+   "to": "1330-2200",
+   "note": "Updated roster (Thursday sheet)",
+   "logged": "2026-11-05T07:05+05:30"
+  },
+  {
+   "date": "2026-11-05",
+   "name": "Venkatesan",
+   "from": "0630-1500",
+   "to": "comp off",
+   "note": "Updated roster (Thursday sheet)",
+   "logged": "2026-11-05T07:05+05:30"
+  }
+ ]
 }
