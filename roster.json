@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-07T09:00:00+05:30",
+ "updatedAt": "2026-11-07T09:05:00+05:30",
  "me": "Aditya",
  "source": "Official BLR medical roster (photo, 4 Nov)",
  "people": [
@@ -9,10 +9,6 @@
   },
   {
    "n": "Sandesh",
-   "role": "staff"
-  },
-  {
-   "n": "Dhiraj",
    "role": "staff"
   },
   {
@@ -56,7 +52,6 @@
   "2026-11-01": {
    "Dakshina": "T2 0600-1430",
    "Sandesh": "O",
-   "Dhiraj": "leave",
    "Sahil": "2200-0630",
    "Anusree": "O",
    "Abhijeet": "1000-1830",
@@ -70,7 +65,6 @@
   "2026-11-02": {
    "Dakshina": "1330-2200",
    "Sandesh": "T2 0600-1430",
-   "Dhiraj": "leave",
    "Sahil": "2200-0630",
    "Anusree": "O",
    "Abhijeet": "1000-1830",
@@ -84,7 +78,6 @@
   "2026-11-03": {
    "Dakshina": "2200-0630",
    "Sandesh": "T2 0600-1430",
-   "Dhiraj": "leave",
    "Sahil": "2200-0630",
    "Anusree": "comp off",
    "Abhijeet": "1000-1830",
@@ -98,7 +91,6 @@
   "2026-11-04": {
    "Dakshina": "2200-0630",
    "Sandesh": "T2 0600-1430",
-   "Dhiraj": "leave",
    "Sahil": "O",
    "Anusree": "0600-1430",
    "Abhijeet": "1000-1830",
@@ -112,7 +104,6 @@
   "2026-11-05": {
    "Dakshina": "2200-0630",
    "Sandesh": "1330-2200",
-   "Dhiraj": "leave",
    "Sahil": "O",
    "Anusree": "T2 0600-1430",
    "Abhijeet": "1000-1830",
@@ -126,7 +117,6 @@
   "2026-11-06": {
    "Dakshina": "O",
    "Sandesh": "2200-0630",
-   "Dhiraj": "leave",
    "Sahil": "T2 0600-1430",
    "Anusree": "1330-2200",
    "Abhijeet": "1000-1830",
@@ -140,7 +130,6 @@
   "2026-11-07": {
    "Dakshina": "O",
    "Sandesh": "2200-0630",
-   "Dhiraj": "T2 0600-1430",
    "Sahil": "0600-1430",
    "Anusree": "1330-2200",
    "Abhijeet": "O",
@@ -154,7 +143,6 @@
   "2026-11-08": {
    "Dakshina": "T2 0600-1430",
    "Sandesh": "2200-0630",
-   "Dhiraj": "0600-1430",
    "Sahil": "2200-0630",
    "Anusree": "T2 1330-2200",
    "Abhijeet": "1000-1830",
@@ -168,7 +156,6 @@
   "2026-11-09": {
    "Dakshina": "T2 0600-1430",
    "Sandesh": "O",
-   "Dhiraj": "1330-2200",
    "Sahil": "2200-0630",
    "Anusree": "O",
    "Abhijeet": "1000-1830",
@@ -182,7 +169,6 @@
   "2026-11-10": {
    "Dakshina": "1330-2200",
    "Sandesh": "O",
-   "Dhiraj": "2200-0630",
    "Sahil": "O",
    "Anusree": "T2 0600-1430",
    "Abhijeet": "1000-1830",
@@ -196,7 +182,6 @@
   "2026-11-11": {
    "Dakshina": "1330-2200",
    "Sandesh": "0600-1430",
-   "Dhiraj": "2200-0630",
    "Sahil": "O",
    "Anusree": "T2 0600-1430",
    "Abhijeet": "1000-1830",
@@ -210,7 +195,6 @@
   "2026-11-12": {
    "Dakshina": "2200-0630",
    "Sandesh": "0600-1430",
-   "Dhiraj": "O",
    "Sahil": "O",
    "Anusree": "T2 0600-1430",
    "Abhijeet": "1000-1830",
@@ -224,7 +208,6 @@
   "2026-11-13": {
    "Dakshina": "2200-0630",
    "Sandesh": "0600-1430",
-   "Dhiraj": "O",
    "Sahil": "T2 0600-1430",
    "Anusree": "1330-2200",
    "Abhijeet": "1000-1830",
@@ -238,7 +221,6 @@
   "2026-11-14": {
    "Dakshina": "O",
    "Sandesh": "2200-0630",
-   "Dhiraj": "T2 0600-1430",
    "Sahil": "0600-1430",
    "Anusree": "1330-2200",
    "Abhijeet": "O",
@@ -252,7 +234,6 @@
   "2026-11-15": {
    "Dakshina": "O",
    "Sandesh": "2200-0630",
-   "Dhiraj": "T2 0600-1430",
    "Sahil": "0600-1430",
    "Anusree": "T2 1330-2200",
    "Abhijeet": "0600-1430",
@@ -266,7 +247,6 @@
   "2026-11-16": {
    "Dakshina": "T2 0600-1430",
    "Sandesh": "O",
-   "Dhiraj": "0600-1430",
    "Sahil": "2200-0630",
    "Anusree": "1330-2200",
    "Abhijeet": "1330-2200",
