@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-05T07:05:00+05:30",
+ "updatedAt": "2026-11-07T09:00:00+05:30",
  "me": "Aditya",
  "source": "Official BLR medical roster (photo, 4 Nov)",
  "people": [
@@ -302,6 +302,54 @@
    "to": "comp off",
    "note": "Updated roster (Thursday sheet)",
    "logged": "2026-11-05T07:05+05:30"
+  },
+  {
+   "date": "2026-11-06",
+   "name": "Aditya",
+   "from": "1330-2200",
+   "to": "0630-1500",
+   "note": "Worked morning (swap with Dr Venkatesan)",
+   "logged": "2026-11-07T09:00+05:30"
+  },
+  {
+   "date": "2026-11-06",
+   "name": "Venkatesan",
+   "from": "0630-1500",
+   "to": "1330-2200",
+   "note": "Worked evening (swap with Dr Aditya)",
+   "logged": "2026-11-07T09:00+05:30"
+  },
+  {
+   "date": "2026-11-07",
+   "name": "Aditya",
+   "from": "1330-2200",
+   "to": "0630-1500",
+   "note": "Worked morning (swap with Dr Venkatesan)",
+   "logged": "2026-11-07T09:00+05:30"
+  },
+  {
+   "date": "2026-11-07",
+   "name": "Venkatesan",
+   "from": "0630-1500",
+   "to": "1330-2200",
+   "note": "Worked evening (swap with Dr Aditya)",
+   "logged": "2026-11-07T09:00+05:30"
+  },
+  {
+   "date": "2026-11-07",
+   "name": "Amit",
+   "from": "O",
+   "to": "0900-1730",
+   "note": "Worked general shift (was off)",
+   "logged": "2026-11-07T09:00+05:30"
+  },
+  {
+   "date": "2026-11-07",
+   "name": "Daris",
+   "from": "0900-1730",
+   "to": "0600-1430",
+   "note": "Worked morning (was general)",
+   "logged": "2026-11-07T09:00+05:30"
   }
  ]
 }
