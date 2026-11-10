@@ -65,6 +65,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .next .in{font-family:var(--display);font-weight:600;font-size:1.3rem;color:var(--accent);text-align:right;font-variant-numeric:tabular-nums}
 .next.done{background:var(--surface);border-color:var(--line)}
 .summary{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.sumrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.alertbtn{flex:none;padding:5px 10px;font-size:.78rem;color:var(--muted)}
+.alertbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 
 .tablebox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
@@ -322,7 +325,7 @@ tr.crewlate td.ba{color:var(--warn)}
 
   <div class="prog" id="prog" hidden></div>
   <div class="next" id="next" hidden></div>
-  <div class="summary" id="summary"></div>
+  <div class="sumrow"><div class="summary" id="summary"></div><button class="btn alertbtn" id="alerts" type="button" aria-pressed="false">Alerts off</button></div>
 
   <div class="tablebox">
     <table>
@@ -333,6 +336,7 @@ tr.crewlate td.ba{color:var(--warn)}
   <div class="note" id="status"></div>
   <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
   <div class="note"><button class="linkbtn" id="cs-open" type="button">Crew list: checking…</button></div>
+  <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. They work only while this app is open. No names are shown in alerts.</div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
   </section>
 </div>
@@ -801,9 +805,67 @@ tr.crewlate td.ba{color:var(--warn)}
         try{ const d=JSON.parse(localStorage.getItem("lastData")||"null"); if(d){ state.days=d.days||{}; state.updatedAt=d.updatedAt||null; } }catch(_){}
       }
     }
-    state.loaded=true; render();
+    state.loaded=true; render(); checkAlerts();
     if(manual){ btn.disabled=false; btn.textContent="Refresh"; }
   }
+
+  // ---- alerts (only while the app is open): 5 min before crew report, and 15 min after if still not ticked ----
+  let alertsOn = lsGet("alertsOn",false)===true, alerted = lsGet("alerted",{}), actxA=null;
+  function alertBeep(){
+    try{
+      actxA = actxA || new (window.AudioContext||window.webkitAudioContext)(); if(actxA.state==="suspended") actxA.resume();
+      [0,0.28].forEach(t=>{ const o=actxA.createOscillator(), g=actxA.createGain(); o.frequency.value=880; o.connect(g); g.connect(actxA.destination);
+        g.gain.setValueAtTime(0.0001,actxA.currentTime+t); g.gain.exponentialRampToValueAtTime(0.4,actxA.currentTime+t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,actxA.currentTime+t+0.22);
+        o.start(actxA.currentTime+t); o.stop(actxA.currentTime+t+0.24); });
+    }catch(e){}
+  }
+  const canNotify = () => "Notification" in window && Notification.permission==="granted";
+  async function notify(lines){
+    alertBeep(); try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){}
+    if(!canNotify()) return;
+    const title = lines.length===1 ? "BA alert" : lines.length+" BA alerts", opt={body:lines.slice(0,6).join("\n"), tag:"ba-"+Date.now(), icon:"icons/icon-192.png", badge:"icons/icon-192.png", vibrate:[200,100,200]};
+    try{ const reg=await navigator.serviceWorker.ready; await reg.showNotification(title,opt); }
+    catch(e){ try{ new Notification(title,opt); }catch(_){} }
+  }
+  function renderAlertBtn(){
+    const b=$("alerts"); b.setAttribute("aria-pressed",String(alertsOn));
+    b.textContent = !alertsOn ? "Alerts off" : canNotify() ? "Alerts on" : "Alerts on (sound only)";
+  }
+  function checkAlerts(){
+    if(!alertsOn || !state.loaded) return;
+    const now=nowMs(), win=shiftWindow(0,autoPick().shift), {out}=flightsFor(win), lines=[];
+    const once=k=>{ if(alerted[k]) return false; alerted[k]=now; return true; };
+    const scan=(ck,label,people,f,dayBase)=>{
+      const dues={};   // report time -> people due then
+      if(people.length) people.forEach(p=>{ const d=dueMs(p,f,dayBase); if(d!==null && d>=win.start && d<win.end+BA_MS) (dues[d]||(dues[d]=[])).push(p); });
+      else if(f) dues[f.baMs]=[];
+      Object.keys(dues).forEach(k=>{
+        const d=Number(k), grp=dues[k], pending=grp.filter(p=>!isTicked(ck,p));
+        if(grp.length && !pending.length) return;
+        const who = grp.length ? pending.length+" crew" : "crew";
+        if(now>=d-5*60000 && now<d && once("soon|"+ck+"|"+d)) lines.push(label+": "+who+" report at "+hhmm(d)+" (in "+Math.max(1,Math.round((d-now)/60000))+" min)");
+        if(now>d+OVERDUE_MS && once("late|"+ck+"|"+d)) lines.push(label+": "+who+" not ticked, 15 min past report time "+hhmm(d));
+      });
+    };
+    out.forEach(f=>{ if(!isDone(f)) scan(cKey(f), f.no+" → "+f.code, peopleOf(crewMap[cKey(f)]), f); });
+    [0,1].forEach(i=>{ const dayBase=win.base+i*86400000, ck=isoDate(dayBase+3600000)+"|OTHER";
+      const people=peopleOf(crewMap[ck]).filter(p=>{ if(!p[2]) return false; const t=dayBase+hm(p[2])*60000; return t>=win.start && t<win.end; });
+      if(people.length) scan(ck,"Standby",people,null,dayBase); });
+    if(lines.length){
+      const cutoff=now-2*86400000; Object.keys(alerted).forEach(k=>{ if(alerted[k]<cutoff) delete alerted[k]; });
+      lsSet("alerted",alerted); notify(lines);
+    }
+  }
+  $("alerts").addEventListener("click",async()=>{
+    alertsOn=!alertsOn; lsSet("alertsOn",alertsOn);
+    if(alertsOn){
+      alertBeep();   // also unlocks sound on this tap
+      if("Notification" in window && Notification.permission==="default"){ try{ await Notification.requestPermission(); }catch(e){} }
+    }
+    renderAlertBtn(); checkAlerts();
+  });
+  renderAlertBtn(); setInterval(checkAlerts,20000);
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ renderAlertBtn(); checkAlerts(); } });
 
   // UTC clock in the corner
   function tickUtc(){

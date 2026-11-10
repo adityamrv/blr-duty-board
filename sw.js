@@ -1,6 +1,6 @@
 // Duty Board service worker: app shell works offline; flight data is fetched fresh
 // when online and falls back to the last saved copy when offline.
-const SHELL = "duty-board-shell-v18";
+const SHELL = "duty-board-shell-v19";
 const DATA = "duty-board-data";
 const SHELL_FILES = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
@@ -33,4 +33,13 @@ self.addEventListener("fetch", e => {
     caches.open(SHELL).then(c => c.put(e.request, copy));
     return res;
   }).catch(() => caches.match(e.request).then(r => r || caches.match("index.html"))));
+});
+
+// tapping an alert opens (or returns to) the app
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+    const c = list.find(x => "focus" in x);
+    return c ? c.focus() : self.clients.openWindow("./");
+  }));
 });
