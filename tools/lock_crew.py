@@ -10,10 +10,15 @@ Usage:
   python3 tools/lock_crew.py lock /path/outside/the/repo/crew_plain.json   # every day
 
 Plain list format (keep this file OUTSIDE the repository and delete it afterwards):
-  {"flights": {"2026-11-10|QP 1262": {"capt": "Name", "fo": "Name", "cabin": ["Name", "Name"]}}}
-Key = India-time departure date | flight number exactly as in data.json ("QP 1262").
-Each lock replaces the list for the flights it contains; flights from earlier lists stay on the
-phone for 3 days. To correct one flight, lock a list containing just that flight.
+  {"flights": {"2026-11-10|QP 1811": [["CP", "First Last", "02:55", ""], ["CC1", "First Last", "02:55", ""]]},
+   "other":   {"2026-11-10": [["IFM", "First Last", "02:55", "STANDBY"]]}}
+One person = [rank, name, report time HH:MM India time, tag].
+  rank: exactly as in the crew roster column Crew_Rank (CP, FO, IFM, CC1, CC2).
+  tag:  "" for FLY rows; "DEADHEAD" for deadhead rows (kept under their flight);
+        STANDBY / TRAVEL rows have no flight and go under "other" for their date.
+Flight key = India-time departure date | flight number exactly as in data.json ("QP 1262").
+Do not include staff numbers or test ids. Each lock replaces the list for the flights and dates
+it contains; earlier lists stay on the phone for 3 days. To correct one flight, lock just that flight.
 """
 import base64, hashlib, json, os, sys, time
 from cryptography.hazmat.primitives import hashes, serialization
@@ -45,22 +50,29 @@ def lock(path):
     plain = json.load(open(path))
     flights = plain.get("flights") or {}
     days = json.load(open(os.path.join(ROOT, "data.json"))).get("days", {})
-    for k, c in flights.items():
+    other = plain.get("other") or {}
+    def check(where, people):
+        for p in people:
+            if not (isinstance(p, list) and len(p) == 4 and all(isinstance(x, str) for x in p) and p[1].strip()):
+                sys.exit(f"{where}: each person must be [rank, name, report HH:MM, tag]; got {p!r}")
+    for k, people in flights.items():
         date, no = k.split("|")
         known = {f["no"] for f in days.get(date, {}).get("flights", [])}
         if no not in known:
             print(f"WARNING: {k} is not in data.json for that date; it will not show in the app")
-        if not isinstance(c.get("cabin", []), list):
-            sys.exit(f"{k}: cabin must be a list")
+        check(k, people)
+    for d, people in other.items():
+        check("other " + d, people)
     phones = load_keys()["phones"]
     if not phones:
         sys.exit("No phone set up yet: run add-phone first.")
     key, iv = AESGCM.generate_key(256), os.urandom(12)
-    ct = AESGCM(key).encrypt(iv, json.dumps({"flights": flights}, ensure_ascii=False).encode(), None)
+    ct = AESGCM(key).encrypt(iv, json.dumps({"flights": flights, "other": other}, ensure_ascii=False).encode(), None)
     oaep = padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
     ek = {p["kid"]: b64(serialization.load_der_public_key(base64.b64decode(p["spki"])).encrypt(key, oaep)) for p in phones}
     json.dump({"v": 1, "at": int(time.time() * 1000), "ek": ek, "iv": b64(iv), "ct": b64(ct)}, open(OUT, "w"))
-    print(f"Locked {len(flights)} flight(s) for {len(phones)} phone(s) -> crew.json")
+    n = sum(len(v) for v in flights.values()) + sum(len(v) for v in other.values())
+    print(f"Locked {n} people on {len(flights)} flight(s) for {len(phones)} phone(s) -> crew.json")
 
 if __name__ == "__main__":
     a = sys.argv[1:]

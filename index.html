@@ -101,8 +101,9 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
 .cp{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-bottom:1px solid var(--line);font-size:.92rem}
 .cp .box{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;color:transparent}
 .cp .box svg{width:13px;height:13px}
-.cp .r{flex:none;width:2.6em;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.cp .n{overflow-wrap:anywhere;line-height:1.25}
+.cp .r{flex:none;width:2.8em;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cp .n{flex:1;overflow-wrap:anywhere;line-height:1.25}
+.cp .x{flex:none;font-size:.68rem;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .cp[aria-pressed="true"] .box{background:var(--muted);border-color:var(--muted);color:var(--bg)}
 .cp[aria-pressed="true"] .n{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
 .cpfoot{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;font-size:.75rem;color:var(--muted)}
@@ -330,12 +331,11 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
     <button class="btn" id="crew-close" type="button">Close</button>
   </div>
   <div class="note" id="crew-sub"></div>
-  <div class="cf"><label for="crew-capt">Captain</label><input id="crew-capt" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next"></div>
-  <div class="cf"><label for="crew-fo">First officer</label><input id="crew-fo" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next"></div>
-  <div class="cf"><label for="crew-cabin">Cabin crew (one name per line)</label><textarea id="crew-cabin" autocomplete="off" autocapitalize="words" spellcheck="false"></textarea></div>
+  <div class="cf"><label for="crew-list">One person per line: rank, then name</label><textarea id="crew-list" autocomplete="off" autocapitalize="words" spellcheck="false"></textarea></div>
+  <div class="note">Ranks: CP captain, FO first officer, IFM in-flight manager, CC1 and CC2 cabin crew. Example line: FO First Last</div>
   <div class="crow">
     <button class="btn pri" id="crew-save" type="button">Save</button>
-    <button class="btn" id="crew-clear" type="button">Empty the boxes</button>
+    <button class="btn" id="crew-clear" type="button">Empty the box</button>
   </div>
   <div class="note">Changes made here stay on this phone only.</div>
  </div>
@@ -415,7 +415,11 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
     lsSet("crewNames",crewMap); lsSet("crewTicks",tickMap);
   }
   saveCrew();
-  const peopleOf = c => !c ? [] : [].concat(c.capt?[["Capt",c.capt]]:[], c.fo?[["FO",c.fo]]:[], (c.cabin||[]).map(n=>["CC",n]));
+  // one person = [rank, name, report time "HH:MM" (India), tag]; ranks as in the crew roster: CP captain, FO first officer,
+  // IFM in-flight manager, CC1 / CC2 cabin crew. Tag is STANDBY, TRAVEL or DEADHEAD when the person is not operating the flight.
+  const RANKS = ["CP","FO","IFM","CC1","CC2"];
+  const rankPos = r => { const i=RANKS.indexOf(r); return i<0 ? RANKS.length : i; };
+  const peopleOf = c => !c || !c.crew ? [] : c.crew.slice().sort((a,b)=>rankPos(a[0])-rankPos(b[0]));
   const pid = p => p[0]+"|"+p[1];
   const tickedCount = (k,people) => { const t=tickMap[k]||{}; return people.filter(p=>t[pid(p)]).length; };
 
@@ -464,7 +468,11 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
         const data=JSON.parse(new TextDecoder().decode(pt)), at=Number(doc.at);
         Object.keys(data.flights||{}).forEach(k=>{
           const c=data.flights[k]; if(crewMap[k] && crewMap[k].t>=at) return;   // a newer change made on the phone wins
-          crewMap[k]={capt:c.capt||"", fo:c.fo||"", cabin:c.cabin||[], t:at};
+          crewMap[k]={crew:c, t:at};
+        });
+        Object.keys(data.other||{}).forEach(d=>{   // standby, travel and other crew with no flight, per date
+          const k=d+"|OTHER"; if(crewMap[k] && crewMap[k].t>=at) return;
+          crewMap[k]={crew:data.other[d], t:at};
         });
         crewAt=at; lsSet("crewAt",crewAt); saveCrew();
       }
@@ -474,7 +482,7 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
   }
   function renderCrewNote(){
     const b=$("cs-open"), st=crewInfo.state;
-    const today=isoDate(nowMs()), n=Object.keys(crewMap).filter(k=>k.slice(0,10)===today).length;
+    const today=isoDate(nowMs()), n=Object.keys(crewMap).filter(k=>k.slice(0,10)===today && !k.endsWith("|OTHER") && peopleOf(crewMap[k]).length).length;
     const when=crewAt ? dayLabel(crewAt)+", "+hhmm(crewAt) : "";
     b.textContent = st==="ready" ? (crewAt ? "Crew list: updated "+when+" · "+n+" flights today" : "Crew list: none sent yet")
       : st==="setup" ? "Crew list: set up this phone (tap)"
@@ -494,12 +502,10 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
   function shutCrew(){ openKey=null; clearTimeout(openTimer); }
 
   let crewKey = null;
-  function openCrew(f){
-    crewKey = cKey(f);
-    const c = crewMap[crewKey] || {};
-    $("crew-title").textContent = f.no+" → "+f.code;
-    $("crew-sub").textContent = f.to+" · STD "+f.std+" · BA "+hhmm(f.baMs)+" · "+dayLabel(f.stdMs);
-    $("crew-capt").value = c.capt||""; $("crew-fo").value = c.fo||""; $("crew-cabin").value = (c.cabin||[]).join("\n");
+  function openCrew(ck, title, sub){
+    crewKey = ck;
+    $("crew-title").textContent = title; $("crew-sub").textContent = sub;
+    $("crew-list").value = peopleOf(crewMap[ck]).map(p=>(p[0]?p[0]+" ":"")+p[1]).join("\n");
     $("crew").hidden = false; document.body.style.overflow = "hidden";
   }
   function closeCrew(){ $("crew").hidden = true; document.body.style.overflow = ""; crewKey = null; }
@@ -604,43 +610,62 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
       if(!done && now>f.baMs+OVERDUE_MS) bac.classList.add("late");
       rows.appendChild(tr);
       // crew line under the flight: shows a count only; tap to open the names and tick them off
-      const ck=cKey(f), people=peopleOf(crewMap[ck]);
+      const people=peopleOf(crewMap[cKey(f)]);
       if(people.length){
         tr.classList.add("hascrew");
-        const cr=document.createElement("tr"), cc=document.createElement("td"), cb=document.createElement("button");
-        const open = openKey===ck && now<openUntil, got=tickedCount(ck,people);
-        cr.className="crewrow"+((tr.classList.contains("nextrow")||tr.classList.contains("inprog"))?" hl":"");
-        cc.colSpan=4; cb.type="button"; cb.className="crewbtn"+(got===people.length?" all":"");
-        cb.setAttribute("aria-expanded",String(open));
-        cb.setAttribute("aria-label","Crew for "+f.no+", "+got+" of "+people.length+" ticked");
-        const chev=document.createElement("span"); chev.className="chev"; chev.textContent="▸";
-        cb.append(chev, "Crew "+got+"/"+people.length+(got===people.length?" ✓":""));
-        cb.addEventListener("click",()=>{ if(open) shutCrew(); else keepOpen(ck); render(); });
-        cc.appendChild(cb);
-        if(open){
-          const list=document.createElement("div"); list.className="cplist";
-          people.forEach(p=>{
-            const on=!!(tickMap[ck]||{})[pid(p)];
-            const b=document.createElement("button"); b.type="button"; b.className="cp"; b.setAttribute("aria-pressed",String(on));
-            b.innerHTML='<span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg></span><span class="r"></span><span class="n"></span>';
-            b.querySelector(".r").textContent=p[0]; b.querySelector(".n").textContent=p[1];
-            b.addEventListener("click",()=>{
-              const t=tickMap[ck]||(tickMap[ck]={});
-              if(t[pid(p)]) delete t[pid(p)]; else t[pid(p)]=Date.now();
-              // every name ticked = BA done for the flight
-              if(tickedCount(ck,people)===people.length) doneMap[fKey(f)]=Date.now();
-              saveCrew(); saveDone(); keepOpen(ck); render();
-            });
-            list.appendChild(b);
-          });
-          const foot=document.createElement("div"); foot.className="cpfoot";
-          const ed=document.createElement("button"); ed.type="button"; ed.textContent="Change names"; ed.addEventListener("click",()=>openCrew(f));
-          const hd=document.createElement("button"); hd.type="button"; hd.textContent="Hide"; hd.addEventListener("click",()=>{ shutCrew(); render(); });
-          foot.append(ed,hd); list.appendChild(foot); cc.appendChild(list);
-        }
-        cr.appendChild(cc); rows.appendChild(cr);
+        rows.appendChild(crewLine(cKey(f), people, f, tr.classList.contains("nextrow")||tr.classList.contains("inprog")));
       }
     });
+    // crew with no flight (standby, travel): listed after the flights, in the shift they report in
+    if(state.loaded) [0,1].forEach(i=>{
+      const dayBase=win.base+i*86400000, ck=isoDate(dayBase+3600000)+"|OTHER";
+      const people=peopleOf(crewMap[ck]).filter(p=>{ if(!p[2]) return i===0; const t=dayBase+hm(p[2])*60000; return t>=win.start && t<win.end; });
+      if(!people.length) return;
+      const tr=document.createElement("tr"), td=document.createElement("td");
+      tr.className="hascrew"; td.colSpan=4; td.className="to";
+      td.innerHTML='<span class="city">Standby and no flight</span><span class="code"></span>';
+      td.querySelector(".code").textContent=dayLabel(dayBase).toUpperCase();
+      tr.appendChild(td); rows.appendChild(tr);
+      rows.appendChild(crewLine(ck, people, null, false, "Standby and no flight", dayLabel(dayBase)));
+    });
+    function crewLine(ck, people, f, hl, title, sub){
+      const cr=document.createElement("tr"), cc=document.createElement("td"), cb=document.createElement("button");
+      const open = openKey===ck && now<openUntil, got=tickedCount(ck,people), baT=f?hhmm(f.baMs):"";
+      cr.className="crewrow"+(hl?" hl":"");
+      cc.colSpan=4; cb.type="button"; cb.className="crewbtn";
+      cb.setAttribute("aria-expanded",String(open));
+      cb.setAttribute("aria-label","Crew"+(f?" for "+f.no:"")+", "+got+" of "+people.length+" ticked");
+      const chev=document.createElement("span"); chev.className="chev"; chev.textContent="▸";
+      cb.append(chev, "Crew "+got+"/"+people.length+(got===people.length?" ✓":""));
+      cb.addEventListener("click",()=>{ if(open) shutCrew(); else keepOpen(ck); render(); });
+      cc.appendChild(cb);
+      if(open){
+        const list=document.createElement("div"); list.className="cplist";
+        people.forEach(p=>{
+          const on=!!(tickMap[ck]||{})[pid(p)];
+          const b=document.createElement("button"); b.type="button"; b.className="cp"; b.setAttribute("aria-pressed",String(on));
+          b.innerHTML='<span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg></span><span class="r"></span><span class="n"></span><span class="x"></span>';
+          b.querySelector(".r").textContent=p[0]; b.querySelector(".n").textContent=p[1];
+          // right side: tag (standby, travel, deadhead) and the report time when it is not the flight's BA time
+          const extra=[]; if(p[3]) extra.push(p[3].toLowerCase()); if(p[2] && p[2]!==baT) extra.push("rep "+p[2]);
+          b.querySelector(".x").textContent=extra.join(" · ");
+          b.addEventListener("click",()=>{
+            const t=tickMap[ck]||(tickMap[ck]={});
+            if(t[pid(p)]) delete t[pid(p)]; else t[pid(p)]=Date.now();
+            // every name ticked = BA done for the flight
+            if(f && tickedCount(ck,people)===people.length) doneMap[fKey(f)]=Date.now();
+            saveCrew(); saveDone(); keepOpen(ck); render();
+          });
+          list.appendChild(b);
+        });
+        const foot=document.createElement("div"); foot.className="cpfoot";
+        const ed=document.createElement("button"); ed.type="button"; ed.textContent="Change names";
+        ed.addEventListener("click",()=>openCrew(ck, f ? f.no+" → "+f.code : title, f ? f.to+" · STD "+f.std+" · BA "+hhmm(f.baMs)+" · "+dayLabel(f.stdMs) : sub));
+        const hd=document.createElement("button"); hd.type="button"; hd.textContent="Hide"; hd.addEventListener("click",()=>{ shutCrew(); render(); });
+        foot.append(ed,hd); list.appendChild(foot); cc.appendChild(list);
+      }
+      cr.appendChild(cc); return cr;
+    }
 
     const nb=$("next"); nb.textContent="";
     if(state.loaded && out.length && nextUp && now<win.end){
@@ -732,15 +757,16 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
   $("crew-close").addEventListener("click",closeCrew);
   $("crew-save").addEventListener("click",()=>{
     if(!crewKey) return;
-    const clean=v=>v.replace(/\s+/g," ").trim();
-    const capt=clean($("crew-capt").value), fo=clean($("crew-fo").value);
-    const cabin=$("crew-cabin").value.split(/[\n,]+/).map(clean).filter(Boolean);
-    crewMap[crewKey]={capt,fo,cabin,t:Date.now()};   // an emptied list stays empty until a newer list arrives
+    const old={}; peopleOf(crewMap[crewKey]).forEach(p=>{ old[pid(p)]=p; });
+    const crew=$("crew-list").value.split(/\n+/).map(v=>v.replace(/\s+/g," ").trim()).filter(Boolean).map(line=>{
+      const m=line.match(/^([A-Za-z]{2,4}\d?)\s+(.+)$/), known=m && (RANKS.includes(m[1].toUpperCase()) || /^[A-Z]{2,4}\d?$/.test(m[1]));
+      const p=known ? [m[1].toUpperCase(), m[2]] : ["", line];
+      const o=old[pid(p)]; return o ? o : [p[0],p[1],"",""];   // unchanged people keep their report time and tag
+    });
+    crewMap[crewKey]={crew,t:Date.now()};   // an emptied list stays empty until a newer list arrives
     const k=crewKey; saveCrew(); closeCrew(); keepOpen(k); renderCrewNote(); render();
   });
-  $("crew-clear").addEventListener("click",()=>{ $("crew-capt").value=""; $("crew-fo").value=""; $("crew-cabin").value=""; });
-  $("crew-capt").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("crew-fo").focus(); } });
-  $("crew-fo").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("crew-cabin").focus(); } });
+  $("crew-clear").addEventListener("click",()=>{ $("crew-list").value=""; $("crew-list").focus(); });
   $("cs-open").addEventListener("click",()=>{ renderCrewNote(); $("cs").hidden=false; document.body.style.overflow="hidden"; });
   $("cs-close").addEventListener("click",()=>{ $("cs").hidden=true; document.body.style.overflow=""; });
   $("cs-copy").addEventListener("click",async()=>{
