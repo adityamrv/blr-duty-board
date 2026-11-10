@@ -66,6 +66,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .next.done{background:var(--surface);border-color:var(--line)}
 .summary{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .sumrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nativeonly{display:none}
+.native .nativeonly{display:inline}
+.native .webonly{display:none}
 .alertbtn{flex:none;padding:5px 10px;font-size:.78rem;color:var(--muted)}
 .alertbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 
@@ -336,7 +339,7 @@ tr.crewlate td.ba{color:var(--warn)}
   <div class="note" id="status"></div>
   <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
   <div class="note"><button class="linkbtn" id="cs-open" type="button">Crew list: checking…</button></div>
-  <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. They work only while this app is open. No names are shown in alerts.</div>
+  <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. No names are shown in alerts. <span class="webonly">In the browser they work only while this app is open. For alerts with the phone locked, install the <a href="https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk">Android app</a>.</span><span class="nativeonly">In this Android app they also come when the app is closed or the phone is locked. Open the app at the start of each duty so it can set the alerts for that shift.</span></div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
   </section>
 </div>
@@ -426,6 +429,7 @@ tr.crewlate td.ba{color:var(--warn)}
   const cKey = f => isoDate(f.stdMs)+"|"+f.no;
   const lsGet = (k,d)=>{ try{ return JSON.parse(localStorage.getItem(k)||"null")||d; }catch(e){ return d; } };
   const lsSet = (k,v)=>{ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+  var alertsReady = false;   // set once the alerts code further down has run
   let crewMap = lsGet("crewNames",{}), tickMap = lsGet("crewTicks",{}), crewAt = Number(lsGet("crewAt",0))||0;
   const crewInfo = {state:"checking", kid:null, code:""};
   function saveCrew(){
@@ -734,6 +738,7 @@ tr.crewlate td.ba{color:var(--warn)}
       cr.appendChild(cc); return cr;
     }
 
+    if(alertsReady) queueNative();
     const nb=$("next"); nb.textContent="";
     if(state.loaded && out.length && nextUp && now<win.end){
       const same=out.filter(f=>f.baMs===nextUp.baMs);
@@ -827,14 +832,17 @@ tr.crewlate td.ba{color:var(--warn)}
     try{ const reg=await navigator.serviceWorker.ready; await reg.showNotification(title,opt); }
     catch(e){ try{ new Notification(title,opt); }catch(_){} }
   }
+  // In the Android app the alerts are handed to the phone's own alarm system, so they also fire when the app is
+  // closed or the phone is locked. In the browser they only fire while the app is open.
+  const nativeApp = !!(window.Capacitor && typeof window.Capacitor.nativePromise==="function");
+  const LN = (method,opt) => window.Capacitor.nativePromise("LocalNotifications", method, opt||{});
   function renderAlertBtn(){
     const b=$("alerts"); b.setAttribute("aria-pressed",String(alertsOn));
-    b.textContent = !alertsOn ? "Alerts off" : canNotify() ? "Alerts on" : "Alerts on (sound only)";
+    b.textContent = !alertsOn ? "Alerts off" : (nativeApp || canNotify()) ? "Alerts on" : "Alerts on (sound only)";
   }
-  function checkAlerts(){
-    if(!alertsOn || !state.loaded) return;
-    const now=nowMs(), win=shiftWindow(0,autoPick().shift), {out}=flightsFor(win), lines=[];
-    const once=k=>{ if(alerted[k]) return false; alerted[k]=now; return true; };
+  // every alert of the current shift that is still relevant: {key, kind, at, text}
+  function alertEvents(now){
+    const win=shiftWindow(0,autoPick().shift), {out}=flightsFor(win), ev=[];
     const scan=(ck,label,people,f,dayBase)=>{
       const dues={};   // report time -> people due then
       if(people.length) people.forEach(p=>{ const d=dueMs(p,f,dayBase); if(d!==null && d>=win.start && d<win.end+BA_MS) (dues[d]||(dues[d]=[])).push(p); });
@@ -843,27 +851,71 @@ tr.crewlate td.ba{color:var(--warn)}
         const d=Number(k), grp=dues[k], pending=grp.filter(p=>!isTicked(ck,p));
         if(grp.length && !pending.length) return;
         const who = grp.length ? pending.length+" crew" : "crew";
-        if(now>=d-5*60000 && now<d && once("soon|"+ck+"|"+d)) lines.push(label+": "+who+" report at "+hhmm(d)+" (in "+Math.max(1,Math.round((d-now)/60000))+" min)");
-        if(now>d+OVERDUE_MS && once("late|"+ck+"|"+d)) lines.push(label+": "+who+" not ticked, 15 min past report time "+hhmm(d));
+        ev.push({key:"soon|"+ck+"|"+d, kind:"soon", due:d, at:d-5*60000, text:label+": "+who+" report at "+hhmm(d)});
+        ev.push({key:"late|"+ck+"|"+d, kind:"late", due:d, at:d+OVERDUE_MS, text:label+": "+who+" not ticked, 15 min past report time "+hhmm(d)});
       });
     };
     out.forEach(f=>{ if(!isDone(f)) scan(cKey(f), f.no+" → "+f.code, peopleOf(crewMap[cKey(f)]), f); });
     [0,1].forEach(i=>{ const dayBase=win.base+i*86400000, ck=isoDate(dayBase+3600000)+"|OTHER";
       const people=peopleOf(crewMap[ck]).filter(p=>{ if(!p[2]) return false; const t=dayBase+hm(p[2])*60000; return t>=win.start && t<win.end; });
       if(people.length) scan(ck,"Standby",people,null,dayBase); });
+    return ev;
+  }
+  function checkAlerts(){
+    if(nativeApp){ queueNative(); return; }
+    if(!alertsOn || !state.loaded) return;
+    const now=nowMs(), lines=[];
+    alertEvents(now).forEach(e=>{
+      const due = e.kind==="soon" ? (now>=e.at && now<e.due) : now>e.at;
+      if(!due || alerted[e.key]) return;
+      alerted[e.key]=now;
+      lines.push(e.kind==="soon" ? e.text+" (in "+Math.max(1,Math.round((e.due-now)/60000))+" min)" : e.text);
+    });
     if(lines.length){
       const cutoff=now-2*86400000; Object.keys(alerted).forEach(k=>{ if(alerted[k]<cutoff) delete alerted[k]; });
       lsSet("alerted",alerted); notify(lines);
     }
   }
+  // Android app: keep the phone's scheduled alerts equal to the list above (re-done whenever a tick or the data changes)
+  let nativeTimer=null, nativeSig=null, nativeBusy=false;
+  const alertId = key => { let h=7; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))|0; return Math.abs(h)%2000000000+1; };
+  async function syncNative(){
+    if(!nativeApp || nativeBusy) return;
+    const now=nowMs(), list = alertsOn && state.loaded ? alertEvents(now).filter(e=>e.at>now+5000) : [];
+    const sig=JSON.stringify(list.map(e=>[e.key,e.text]));
+    if(sig===nativeSig) return;
+    nativeBusy=true;
+    try{
+      await LN("cancelAll");
+      if(list.length) await LN("schedule",{notifications:list.map(e=>({ id:alertId(e.key), title:"BA alert", body:e.text, channelId:"ba-alerts",
+        schedule:{ at:new Date(e.at).toISOString(), allowWhileIdle:true } }))});
+      nativeSig=sig;
+    }catch(e){ nativeSig=null; }
+    nativeBusy=false;
+  }
+  function queueNative(){ if(!nativeApp) return; clearTimeout(nativeTimer); nativeTimer=setTimeout(syncNative,800); }
+  async function nativeSetup(ask){
+    try{
+      await LN("createChannel",{id:"ba-alerts", name:"BA alerts", description:"Crew reporting and late alerts", importance:5, visibility:1, vibration:true});
+      if(ask) await LN("requestPermissions");
+    }catch(e){}
+  }
   $("alerts").addEventListener("click",async()=>{
     alertsOn=!alertsOn; lsSet("alertsOn",alertsOn);
     if(alertsOn){
-      alertBeep();   // also unlocks sound on this tap
-      if("Notification" in window && Notification.permission==="default"){ try{ await Notification.requestPermission(); }catch(e){} }
+      if(nativeApp) await nativeSetup(true);
+      else{
+        alertBeep();   // also unlocks sound on this tap
+        if("Notification" in window && Notification.permission==="default"){ try{ await Notification.requestPermission(); }catch(e){} }
+      }
     }
     renderAlertBtn(); checkAlerts();
   });
+  if(nativeApp){
+    document.documentElement.classList.add("native");
+    if(alertsOn) nativeSetup(false);
+  }
+  alertsReady = true;
   renderAlertBtn(); setInterval(checkAlerts,20000);
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ renderAlertBtn(); checkAlerts(); } });
 

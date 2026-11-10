@@ -1,0 +1,10 @@
+{
+  "appId": "in.adityamrv.dutyboard",
+  "appName": "Duty Board",
+  "webDir": "www",
+  "server": {
+    "url": "https://adityamrv.github.io/blr-duty-board/",
+    "androidScheme": "https",
+    "cleartext": false
+  }
+}

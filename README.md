@@ -31,3 +31,11 @@ A small installable web app: Akasa Air departures from Bengaluru (BLR) for each 
 
 - Pie chart of one person's duty split (morning, evening, night, off, leave, other), for "So far" (up to today) or the whole saved roster; team counts table (tap a name to see their pie); change log, newest first.
 
+## Android app (alerts with the phone locked)
+
+- `android-app/` is a thin Android shell (Capacitor) that opens the live Duty Board and adds the phone's alarm system through the local-notifications plugin. `.github/workflows/android-app.yml` builds it on every change under `android-app/` and publishes `duty-board.apk` on the `android-app` release: https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk
+- Inside the app, with "Alerts on", `index.html` schedules every alert of the current shift (5 min before each crew report time, 15 min after it if people are still unticked) with the phone, and re-does the list whenever a tick or the data changes. Alerts are only set for the shift during which the app was opened.
+- Web changes (index.html and data) reach the Android app by themselves; a new APK is only needed when `android-app/` changes.
+- The Android app has its own storage, so it has its own phone code: set it up once more under "Crew list" and add the code with `tools/lock_crew.py add-phone`.
+- `android-app/dutyboard.keystore` (password `dutyboard`) is the app's signing key. It is in this public repository on purpose so every build installs over the last one; it protects nothing by itself. Only install the APK from this repository's release.
+
