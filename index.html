@@ -99,6 +99,12 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
 .crewbtn .cg.some{color:var(--ink)}
 .crewbtn .cg.all{color:var(--muted);font-weight:400}
 .crewbtn .sep{opacity:.6}
+/* late: someone not ticked 15 min after their report time */
+tr.crewlate td,tr.crewrow.late td{background-color:var(--warn-soft)}
+tr.crewlate td.ba{color:var(--warn)}
+.crewbtn .cg.late{color:var(--warn);font-weight:700}
+.cp .x .late{color:var(--warn);font-weight:700}
+.cp.late .box{border-color:var(--warn)}
 .crewbtn:focus-visible,.cp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cplist{margin:2px 0 4px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
 .cpcols{display:flex;align-items:stretch}
@@ -431,7 +437,24 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
   const rankPos = r => { const i=RANKS.indexOf(r); return i<0 ? RANKS.length : i; };
   const peopleOf = c => !c || !c.crew ? [] : c.crew.slice().sort((a,b)=>rankPos(a[0])-rankPos(b[0]));
   const pid = p => p[0]+"|"+p[1];
-  const tickedCount = (k,people) => { const t=tickMap[k]||{}; return people.filter(p=>t[pid(p)]).length; };
+  // The BA test is done once per duty, so a person ticked under one flight counts as ticked under
+  // every flight of the same date (same rank and name).
+  const isTicked = (k,p) => { const id=pid(p), d=k.slice(0,10); return Object.keys(tickMap).some(x=>x.slice(0,10)===d && tickMap[x] && tickMap[x][id]); };
+  const tickedCount = (k,people) => people.filter(p=>isTicked(k,p)).length;
+  function setTick(k,p,on){
+    const id=pid(p), d=k.slice(0,10);
+    if(on) (tickMap[k]||(tickMap[k]={}))[id]=Date.now();
+    else Object.keys(tickMap).forEach(x=>{ if(x.slice(0,10)===d && tickMap[x]) delete tickMap[x][id]; });
+  }
+  const crewAllTicked = f => { const people=peopleOf(crewMap[cKey(f)]); return people.length>0 && tickedCount(cKey(f),people)===people.length; };
+  // when a person is due: own report time, else the flight's BA time
+  function dueMs(p,f,dayBase){
+    if(!p[2]) return f ? f.baMs : null;
+    if(!f) return dayBase+hm(p[2])*60000;
+    const q=istParts(f.stdMs); let t=istMs(q.y,q.m,q.d,0,0)+hm(p[2])*60000;
+    if(t>f.stdMs) t-=86400000;   // reported before midnight for a flight after midnight
+    return t;
+  }
 
   // phone key pair (kept in the phone's own database; the private key cannot be exported)
   const b64e = buf => { let s=""; new Uint8Array(buf).forEach(b=>s+=String.fromCharCode(b)); return btoa(s); };
@@ -520,7 +543,7 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
   }
   function closeCrew(){ $("crew").hidden = true; document.body.style.overflow = ""; crewKey = null; }
   const departed = f => Date.now() >= f.stdMs;
-  const isDone = f => departed(f) || !!doneMap[fKey(f)];
+  const isDone = f => departed(f) || !!doneMap[fKey(f)] || crewAllTicked(f);
   const SHIFTS = [
     {id:"morning",   name:"Morning",   s:"06:30", e:"15:00"},
     {id:"afternoon", name:"Afternoon", s:"13:30", e:"22:00"},
@@ -623,7 +646,9 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
       const people=peopleOf(crewMap[cKey(f)]);
       if(people.length){
         tr.classList.add("hascrew");
-        rows.appendChild(crewLine(cKey(f), people, f, tr.classList.contains("nextrow")||tr.classList.contains("inprog")));
+        const cr=crewLine(cKey(f), people, f, tr.classList.contains("nextrow")||tr.classList.contains("inprog"));
+        if(cr.classList.contains("late")) tr.classList.add("crewlate");   // someone is unticked 15 min past their report time: whole card red
+        rows.appendChild(cr);
       }
     });
     // crew with no flight (standby, travel): listed after the flights, in the shift they report in
@@ -636,23 +661,29 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
       td.innerHTML='<span class="city">Standby and no flight</span><span class="code"></span>';
       td.querySelector(".code").textContent=dayLabel(dayBase).toUpperCase();
       tr.appendChild(td); rows.appendChild(tr);
-      rows.appendChild(crewLine(ck, people, null, false, "Standby and no flight", dayLabel(dayBase)));
+      const cr=crewLine(ck, people, null, false, "Standby and no flight", dayLabel(dayBase), dayBase);
+      if(cr.classList.contains("late")) tr.classList.add("crewlate");
+      rows.appendChild(cr);
     });
-    function crewLine(ck, people, f, hl, title, sub){
+    function crewLine(ck, people, f, hl, title, sub, dayBase){
       const cr=document.createElement("tr"), cc=document.createElement("td"), cb=document.createElement("button");
-      const open = openKey===ck && now<openUntil, got=tickedCount(ck,people), baT=f?hhmm(f.baMs):"";
-      cr.className="crewrow"+(hl?" hl":"");
+      const open = openKey===ck && now<openUntil, baT=f?hhmm(f.baMs):"";
+      // late = not ticked 15 min after the person's report time. Not counted once the flight is done or departed,
+      // or when the person reported before this shift began (the earlier shift's test).
+      const isLate=p=>{ if((f && isDone(f)) || isTicked(ck,p)) return false; const d=dueMs(p,f,dayBase); return d!==null && d>=win.start && now>d+OVERDUE_MS; };
+      const anyLate=people.some(isLate);
+      cr.className="crewrow"+(hl?" hl":"")+(anyLate?" late":"");
       cc.colSpan=4; cb.type="button"; cb.className="crewbtn";
       cb.setAttribute("aria-expanded",String(open));
       // closed line: two counts at a glance, cockpit crew and cabin crew (no names)
       const isPilot=p=>PILOTS.includes(p[0]);
       const parts=[["Cockpit",people.filter(isPilot)],["Cabin",people.filter(p=>!isPilot(p))]].filter(x=>x[1].length)
-        .map(([w,grp])=>{ const n=tickedCount(ck,grp); return {w, n, of:grp.length, all:n===grp.length}; });
-      cb.setAttribute("aria-label",(f?"Crew for "+f.no+": ":"Crew: ")+parts.map(x=>x.w+" "+x.n+" of "+x.of+" ticked").join(", "));
+        .map(([w,grp])=>{ const n=tickedCount(ck,grp); return {w, n, of:grp.length, all:n===grp.length, late:grp.some(isLate)}; });
+      cb.setAttribute("aria-label",(f?"Crew for "+f.no+": ":"Crew: ")+parts.map(x=>x.w+" "+x.n+" of "+x.of+" ticked"+(x.late?", overdue":"")).join(", "));
       const chev=document.createElement("span"); chev.className="chev"; chev.textContent="▸"; cb.appendChild(chev);
       parts.forEach((x,i)=>{
         if(i){ const d=document.createElement("span"); d.className="sep"; d.textContent="·"; cb.appendChild(d); }
-        const g=document.createElement("span"); g.className="cg"+(x.all?" all":x.n?" some":"");
+        const g=document.createElement("span"); g.className="cg"+(x.all?" all":x.late?" late":x.n?" some":"");
         g.textContent=x.w+" "+x.n+"/"+x.of+(x.all?" ✓":""); cb.appendChild(g);
       });
       cb.addEventListener("click",()=>{ if(open) shutCrew(); else keepOpen(ck); render(); });
@@ -666,18 +697,23 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
           const col=document.createElement("div"); col.className="cpcol";
           const h=document.createElement("div"); h.className="cph"; h.textContent=head; col.appendChild(h);
           grp.forEach(p=>{
-            const on=!!(tickMap[ck]||{})[pid(p)];
+            const on=isTicked(ck,p), late=isLate(p);
             const b=document.createElement("button"); b.type="button"; b.className="cp"; b.setAttribute("aria-pressed",String(on));
             b.innerHTML='<span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg></span><span class="tx"><span class="r"></span><span class="n"></span><span class="x"></span></span>';
             b.querySelector(".r").textContent=p[0]; b.querySelector(".n").textContent=p[1];
             // small line: tag (standby, travel, deadhead) and the report time when it is not the flight's BA time
-            const extra=[]; if(p[3]) extra.push(p[3].toLowerCase()); if(p[2] && p[2]!==baT) extra.push("rep "+p[2]);
-            b.querySelector(".x").textContent=extra.join(" · ");
+            // the report time turns red when the person is late (and then shows even if it equals the BA time)
+            const x=b.querySelector(".x"), repT=p[2]||baT;
+            if(p[3]) x.append(p[3].toLowerCase());
+            if(repT && (late || (p[2] && p[2]!==baT))){
+              if(p[3]) x.append(" · ");
+              const rs=document.createElement("span"); rs.textContent="rep "+repT; if(late) rs.className="late"; x.appendChild(rs);
+            }
+            if(late) b.classList.add("late");
             b.addEventListener("click",()=>{
-              const t=tickMap[ck]||(tickMap[ck]={});
-              if(t[pid(p)]) delete t[pid(p)]; else t[pid(p)]=Date.now();
-              // every box ticked = flight done (crossed out); unticking one brings the flight back
-              if(f){ if(tickedCount(ck,people)===people.length) doneMap[fKey(f)]=Date.now(); else delete doneMap[fKey(f)]; }
+              setTick(ck,p,!on);
+              // every box ticked = flight done (crossed out, see isDone); unticking one brings the flight back
+              if(f && tickedCount(ck,people)!==people.length) delete doneMap[fKey(f)];
               saveCrew(); saveDone(); keepOpen(ck); render();
             });
             col.appendChild(b);
