@@ -345,6 +345,7 @@ tr.crewlate td.ba{color:var(--warn)}
   <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
   <div class="note"><button class="linkbtn" id="cs-open" type="button">Crew list: checking…</button></div>
   <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. No names are shown in alerts. <span class="webonly">In the browser they work only while this app is open. For alerts with the phone locked, install the <a href="https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk">Android app</a>.</span><span class="nativeonly">In this Android app they also come when the app is closed or the phone is locked. Open the app at the start of each duty so it can set the alerts for that shift.</span></div>
+  <div class="note"><button class="linkbtn" id="alert-test" type="button">Send a test alert in 1 minute</button></div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
   </section>
 </div>
@@ -882,11 +883,12 @@ tr.crewlate td.ba{color:var(--warn)}
     }
   }
   // Android app: keep the phone's scheduled alerts equal to the list above (re-done whenever a tick or the data changes)
-  let nativeTimer=null, nativeSig=null, nativeBusy=false;
+  let nativeTimer=null, nativeSig=null, nativeBusy=false, testAt=0;
   const alertId = key => { let h=7; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))|0; return Math.abs(h)%2000000000+1; };
   async function syncNative(){
     if(!nativeApp || nativeBusy) return;
     const now=nowMs(), list = alertsOn && state.loaded ? alertEvents(now).filter(e=>e.at>now+5000) : [];
+    if(testAt>now+5000) list.push({key:"test|"+testAt, at:testAt, text:"Test alert: alerts are working on this phone."});
     const sig=JSON.stringify(list.map(e=>[e.key,e.text]));
     if(sig===nativeSig) return;
     nativeBusy=true;
@@ -915,6 +917,18 @@ tr.crewlate td.ba{color:var(--warn)}
       }
     }
     renderAlertBtn(); checkAlerts();
+  });
+  // test alert: fires one minute after the tap, so there is time to lock the phone
+  $("alert-test").addEventListener("click",async()=>{
+    const b=$("alert-test"); testAt=nowMs()+60000;
+    if(nativeApp){ await nativeSetup(true); nativeSig=null; await syncNative(); }
+    else{
+      alertBeep();
+      if("Notification" in window && Notification.permission==="default"){ try{ await Notification.requestPermission(); }catch(e){} }
+      setTimeout(()=>notify(["Test alert: alerts are working on this phone."]),60000);
+    }
+    b.textContent="Test alert set for "+hhmm(testAt)+(nativeApp?". Lock the phone now.":". Keep this app open.");
+    setTimeout(()=>{ b.textContent="Send a test alert in 1 minute"; },90000);
   });
   if(nativeApp){
     document.documentElement.classList.add("native");
