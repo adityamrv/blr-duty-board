@@ -95,7 +95,10 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
 .crewbtn{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;padding:4px 0;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .crewbtn .chev{display:inline-block;width:.8em;transition:transform .15s}
 .crewbtn[aria-expanded="true"] .chev{transform:rotate(90deg)}
-.crewbtn.all{color:var(--muted)}
+.crewbtn .cg{font-weight:600}
+.crewbtn .cg.some{color:var(--ink)}
+.crewbtn .cg.all{color:var(--muted);font-weight:400}
+.crewbtn .sep{opacity:.6}
 .crewbtn:focus-visible,.cp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cplist{margin:2px 0 4px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
 .cpcols{display:flex;align-items:stretch}
@@ -641,17 +644,24 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
       cr.className="crewrow"+(hl?" hl":"");
       cc.colSpan=4; cb.type="button"; cb.className="crewbtn";
       cb.setAttribute("aria-expanded",String(open));
-      cb.setAttribute("aria-label","Crew"+(f?" for "+f.no:"")+", "+got+" of "+people.length+" ticked");
-      const chev=document.createElement("span"); chev.className="chev"; chev.textContent="▸";
-      cb.append(chev, "Crew "+got+"/"+people.length+(got===people.length?" ✓":""));
+      // closed line: two counts at a glance, cockpit crew and cabin crew (no names)
+      const isPilot=p=>PILOTS.includes(p[0]);
+      const parts=[["Cockpit",people.filter(isPilot)],["Cabin",people.filter(p=>!isPilot(p))]].filter(x=>x[1].length)
+        .map(([w,grp])=>{ const n=tickedCount(ck,grp); return {w, n, of:grp.length, all:n===grp.length}; });
+      cb.setAttribute("aria-label",(f?"Crew for "+f.no+": ":"Crew: ")+parts.map(x=>x.w+" "+x.n+" of "+x.of+" ticked").join(", "));
+      const chev=document.createElement("span"); chev.className="chev"; chev.textContent="▸"; cb.appendChild(chev);
+      parts.forEach((x,i)=>{
+        if(i){ const d=document.createElement("span"); d.className="sep"; d.textContent="·"; cb.appendChild(d); }
+        const g=document.createElement("span"); g.className="cg"+(x.all?" all":x.n?" some":"");
+        g.textContent=x.w+" "+x.n+"/"+x.of+(x.all?" ✓":""); cb.appendChild(g);
+      });
       cb.addEventListener("click",()=>{ if(open) shutCrew(); else keepOpen(ck); render(); });
       cc.appendChild(cb);
       if(open){
         // drop-down: pilots on the left, cabin crew on the right, one tick box each
         const list=document.createElement("div"); list.className="cplist";
         const cols=document.createElement("div"); cols.className="cpcols";
-        const isPilot=p=>PILOTS.includes(p[0]);
-        [["Pilots",people.filter(isPilot)],["Cabin crew",people.filter(p=>!isPilot(p))]].forEach(([head,grp])=>{
+        [["Cockpit crew",people.filter(isPilot)],["Cabin crew",people.filter(p=>!isPilot(p))]].forEach(([head,grp])=>{
           if(!grp.length) return;
           const col=document.createElement("div"); col.className="cpcol";
           const h=document.createElement("div"); h.className="cph"; h.textContent=head; col.appendChild(h);
