@@ -376,10 +376,14 @@ tr.crewlate td.ba{color:var(--warn)}
     <button class="btn" id="cs-close" type="button">Close</button>
   </div>
   <div class="note" id="cs-status"></div>
-  <div class="cf"><label for="cs-code">This phone's code</label><textarea id="cs-code" readonly></textarea></div>
-  <div class="crow"><button class="btn pri" id="cs-copy" type="button">Copy code</button></div>
-  <div class="note">One-time setup: copy this code and send it to Claude in chat. After that, send the roster pictures and say "today's crew list".</div>
-  <div class="note">The crew list is stored locked. Only this phone can open it, with a key that never leaves the phone. The code above is not secret. If you clear the app's data or change phones, send the new code to Claude.</div>
+  <div class="crow"><button class="btn pri" id="cs-load" type="button">Load roster file</button></div>
+  <input id="cs-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+  <div class="note" id="cs-result" role="status" aria-live="polite"></div>
+  <div class="note">Pick the day's roster Excel file (.xlsx). It is read on this phone: nothing is uploaded, and staff numbers and test details are not kept. Loading a file replaces the crew lists for the dates in it; your ticks stay.</div>
+  <div class="cf"><label for="cs-code">Other way: Claude loads the list · this phone's code</label><textarea id="cs-code" readonly></textarea></div>
+  <div class="crow"><button class="btn" id="cs-copy" type="button">Copy code</button></div>
+  <div class="note" id="cs-keynote"></div>
+  <div class="note">The code is needed only when Claude loads the list for you: send it to Claude once. A list sent that way is stored locked and only this phone can open it. The code is not secret.</div>
  </div>
 </div>
 
@@ -436,7 +440,7 @@ tr.crewlate td.ba{color:var(--warn)}
   const lsGet = (k,d)=>{ try{ return JSON.parse(localStorage.getItem(k)||"null")||d; }catch(e){ return d; } };
   const lsSet = (k,v)=>{ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
   var alertsReady = false;   // set once the alerts code further down has run
-  let crewMap = lsGet("crewNames",{}), tickMap = lsGet("crewTicks",{}), crewAt = Number(lsGet("crewAt",0))||0;
+  let crewMap = lsGet("crewNames",{}), tickMap = lsGet("crewTicks",{}), crewAt = Number(lsGet("crewAt",0))||0, localAt = Number(lsGet("crewLocalAt",0))||0;
   const crewInfo = {state:"checking", kid:null, code:""};
   function saveCrew(){
     const cutoff = isoDate(Date.now()-3*86400000);
@@ -528,18 +532,105 @@ tr.crewlate td.ba{color:var(--warn)}
     renderCrewNote(); render();
   }
   function renderCrewNote(){
-    const b=$("cs-open"), st=crewInfo.state;
+    const b=$("cs-open"), st=crewInfo.state, lastAt=Math.max(crewAt,localAt);
     const today=isoDate(nowMs()), n=Object.keys(crewMap).filter(k=>k.slice(0,10)===today && !k.endsWith("|OTHER") && peopleOf(crewMap[k]).length).length;
-    const when=crewAt ? dayLabel(crewAt)+", "+hhmm(crewAt) : "";
-    b.textContent = st==="ready" ? (crewAt ? "Crew list: updated "+when+" · "+n+" flights today" : "Crew list: none sent yet")
-      : st==="setup" ? "Crew list: set up this phone (tap)"
-      : st==="nokeys" ? "Crew list: not available in this browser"
-      : st==="error" ? "Crew list: could not load" : "Crew list: checking…";
-    $("cs-status").textContent = st==="ready" ? "This phone is set up." + (crewAt ? " Last list: "+when+"." : " No list has been sent yet.")
-      : st==="setup" ? "This phone is not set up yet, or the saved list was made for another phone."
-      : st==="nokeys" ? "This browser cannot keep a key. Open the installed app instead."
-      : st==="error" ? "The crew list could not be loaded. Check the connection and tap Refresh." : "";
+    const when=lastAt ? dayLabel(lastAt)+", "+hhmm(lastAt) : "";
+    b.textContent = lastAt ? "Crew list: updated "+when+" · "+n+" flights today" : st==="checking" ? "Crew list: checking…" : "Crew list: tap to load the roster file";
+    $("cs-status").textContent = lastAt ? "Last list: "+when+(localAt>=crewAt ? ", loaded from a file on this phone." : ", sent by Claude.") : "No crew list on this phone yet.";
+    $("cs-keynote").textContent = st==="ready" ? "This phone's code is registered." : st==="setup" ? "This phone's code is not registered yet."
+      : st==="nokeys" ? "This browser cannot keep a key, so lists sent by Claude cannot be opened here. Loading a file still works."
+      : st==="error" ? "The list sent by Claude could not be checked. Check the connection and tap Refresh." : "";
     $("cs-code").value=crewInfo.code;
+  }
+
+  // ---- read the roster Excel file on the phone (nothing is uploaded) ----
+  // An .xlsx file is a zip of XML files. Only the first sheet and the shared text table are opened.
+  async function unzipText(buf, wanted){
+    const dv=new DataView(buf), u8=new Uint8Array(buf), td=new TextDecoder(), out={};
+    let e=buf.byteLength-22;
+    while(e>=0 && dv.getUint32(e,true)!==0x06054b50) e--;
+    if(e<0) throw new Error("This is not an Excel (.xlsx) file.");
+    const count=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true);
+    for(let i=0;i<count && dv.getUint32(p,true)===0x02014b50;i++){
+      const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+      const name=td.decode(u8.subarray(p+46,p+46+nl)); p+=46+nl+xl+cl;
+      if(!wanted(name)) continue;
+      const ds=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true), raw=u8.subarray(ds,ds+csize);
+      let bytes;
+      if(method===0) bytes=raw;
+      else if(method===8) bytes=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
+      else throw new Error("This Excel file uses a packing method the app cannot read.");
+      out[name]=td.decode(bytes);
+    }
+    return out;
+  }
+  async function sheetRows(file){
+    const files=await unzipText(await file.arrayBuffer(), n=>/^xl\/(workbook\.xml|_rels\/workbook\.xml\.rels|sharedStrings\.xml|worksheets\/[^\/]+\.xml)$/.test(n));
+    const xml=t=>new DOMParser().parseFromString(t,"application/xml");
+    let sheet=Object.keys(files).filter(n=>n.startsWith("xl/worksheets/")).sort()[0];
+    try{   // the first sheet named in the workbook
+      const rid=xml(files["xl/workbook.xml"]).getElementsByTagName("sheet")[0].getAttribute("r:id");
+      const rel=[...xml(files["xl/_rels/workbook.xml.rels"]).getElementsByTagName("Relationship")].find(r=>r.getAttribute("Id")===rid);
+      const t=rel && "xl/"+rel.getAttribute("Target").replace(/^\/?(xl\/)?/,""); if(t && files[t]) sheet=t;
+    }catch(e){}
+    if(!sheet) throw new Error("No sheet found in this file.");
+    const shared = files["xl/sharedStrings.xml"] ? [...xml(files["xl/sharedStrings.xml"]).getElementsByTagName("si")].map(si=>[...si.getElementsByTagName("t")].map(t=>t.textContent).join("")) : [];
+    const colIx=ref=>{ let n=0; for(const ch of ref){ const c=ch.charCodeAt(0); if(c<65||c>90) break; n=n*26+(c-64); } return n-1; };
+    return [...xml(files[sheet]).getElementsByTagName("row")].map(r=>{
+      const a=[];
+      [...r.getElementsByTagName("c")].forEach(c=>{
+        const t=c.getAttribute("t"), v=c.getElementsByTagName("v")[0];
+        const val = t==="s" ? (shared[Number(v && v.textContent)]||"") : t==="inlineStr" ? [...c.getElementsByTagName("t")].map(x=>x.textContent).join("") : (v ? v.textContent : "");
+        a[colIx(c.getAttribute("r")||"")]=String(val).replace(/\s+/g," ").trim();
+      });
+      return a;
+    });
+  }
+  // text or Excel number -> "HH:MM" / "YYYY-MM-DD"
+  const asTime = v => { const m=/^(\d{1,2}):(\d\d)/.exec(v); if(m) return m[1].padStart(2,"0")+":"+m[2];
+    const x=Number(v); if(v!=="" && x>=0 && x<1){ const t=Math.round(x*1440); return String(Math.floor(t/60)%24).padStart(2,"0")+":"+String(t%60).padStart(2,"0"); } return ""; };
+  const asDate = v => { let m=/^(\d{4})-(\d\d)-(\d\d)/.exec(v); if(m) return m[0];
+    m=/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/.exec(v); if(m) return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+    const x=Number(v); if(v!=="" && x>30000 && x<80000) return new Date(Date.UTC(1899,11,30)+Math.floor(x)*86400000).toISOString().slice(0,10); return ""; };
+  // Same rules as tools/crew_from_xlsx.py: rows with a flight go under that flight (tag = activity unless FLY);
+  // rows with no flight (standby, travel) go under "other" for their date. Staff numbers and test columns are never read.
+  async function readRoster(file){
+    const rows=await sheetRows(file), ix={}; (rows[0]||[]).forEach((h,i)=>{ if(h) ix[h]=i; });
+    const need=["First_Name","Last_Name","Crew_Rank","Flight_Number","STDISTDate","Reporting_Time","Activity_Type"], miss=need.filter(c=>!(c in ix));
+    if(miss.length) throw new Error("This file does not have the column"+(miss.length>1?"s ":" ")+miss.join(", ")+". Is it the crew roster (Staff List) file?");
+    const get=(r,c)=>r[ix[c]]||"";
+    const list=rows.slice(1).map(r=>({ name:(get(r,"First_Name")+" "+get(r,"Last_Name")).replace(/\s+/g," ").trim(), rank:get(r,"Crew_Rank").toUpperCase(),
+      no:get(r,"Flight_Number").toUpperCase().replace(/^([A-Z0-9]{2})\s*(\d+)$/,"$1 $2"), date:asDate(get(r,"STDISTDate")), rep:asTime(get(r,"Reporting_Time")), act:get(r,"Activity_Type").toUpperCase() })).filter(x=>x.name);
+    if(!list.length) throw new Error("No crew rows found in this file.");
+    // rows with no flight carry no date: take the date of the nearest dated row (the one before, else the one after)
+    let last=""; list.forEach(x=>{ if(x.date) last=x.date; else x.date=last; });
+    let next=""; for(let i=list.length-1;i>=0;i--){ if(list[i].date) next=list[i].date; else list[i].date=next; }
+    if(!next) throw new Error("No dates found in the STDISTDate column.");
+    const flights={}, other={}, seen={}; let people=0;
+    list.forEach(x=>{
+      const id=[x.date,x.no,x.rank,x.name].join("|"); if(seen[id]) return; seen[id]=1; people++;
+      const person=[x.rank, x.name, x.rep, x.act==="FLY" ? "" : x.act];
+      if(x.no) (flights[x.date+"|"+x.no]||(flights[x.date+"|"+x.no]=[])).push(person); else (other[x.date]||(other[x.date]=[])).push(person);
+    });
+    return {flights, other, people, dates:[...new Set(list.map(x=>x.date))].sort()};
+  }
+  function applyRoster(data){
+    const at=Date.now();
+    Object.keys(crewMap).forEach(k=>{ if(data.dates.includes(k.slice(0,10))) delete crewMap[k]; });   // the file replaces those dates
+    Object.keys(data.flights).forEach(k=>{ crewMap[k]={crew:data.flights[k], t:at}; });
+    Object.keys(data.other).forEach(d=>{ crewMap[d+"|OTHER"]={crew:data.other[d], t:at}; });
+    localAt=at; lsSet("crewLocalAt",at); saveCrew();
+    // check against the app's own flight list
+    const days=(state.data && state.data.days)||{}, unknown=[], noList=[];
+    data.dates.forEach(d=>{ const fl=(days[d] && days[d].flights)||[], nos=fl.map(f=>f.no);
+      Object.keys(data.flights).forEach(k=>{ if(k.slice(0,10)===d && days[d] && !nos.includes(k.slice(11))) unknown.push(k.slice(11)); });
+      fl.forEach(f=>{ if(!data.flights[d+"|"+f.no]) noList.push(f.no); }); });
+    const nFl=Object.keys(data.flights).length, nOther=Object.values(data.other).reduce((a,v)=>a+v.length,0);
+    const dayName=d=>{ const q=d.split("-").map(Number); return dayLabel(istMs(q[0],q[1]-1,q[2],12,0)); };
+    let msg="Loaded "+(data.people-nOther)+" crew on "+nFl+" flights"+(nOther?" and "+nOther+" with no flight (standby, travel)":"")+", for "+data.dates.map(dayName).join(" and ")+".";
+    if(unknown.length) msg+=" Not in the app's flight list, so not shown: "+unknown.slice(0,8).join(", ")+(unknown.length>8?" and "+(unknown.length-8)+" more":"")+".";
+    if(noList.length) msg+=" Flights in the app with no crew in this file: "+noList.slice(0,8).join(", ")+(noList.length>8?" and "+(noList.length-8)+" more":"")+".";
+    return msg;
   }
 
   // open list: one flight at a time, closes by itself
@@ -965,6 +1056,13 @@ tr.crewlate td.ba{color:var(--warn)}
   $("crew-clear").addEventListener("click",()=>{ $("crew-list").value=""; $("crew-list").focus(); });
   $("cs-open").addEventListener("click",()=>{ renderCrewNote(); $("cs").hidden=false; document.body.style.overflow="hidden"; });
   $("cs-close").addEventListener("click",()=>{ $("cs").hidden=true; document.body.style.overflow=""; });
+  $("cs-load").addEventListener("click",()=>{ $("cs-file").value=""; $("cs-file").click(); });
+  $("cs-file").addEventListener("change",async e=>{
+    const file=e.target.files && e.target.files[0], out=$("cs-result"); if(!file) return;
+    out.textContent="Reading "+file.name+"…";
+    try{ const data=await readRoster(file); out.textContent=applyRoster(data); renderCrewNote(); render(); checkAlerts(); }
+    catch(err){ out.textContent="Could not load this file. "+((err && err.message)||""); }
+  });
   $("cs-copy").addEventListener("click",async()=>{
     const b=$("cs-copy"), t=$("cs-code");
     try{ await navigator.clipboard.writeText(t.value); }catch(e){ t.focus(); t.select(); try{ document.execCommand("copy"); }catch(_){} }
