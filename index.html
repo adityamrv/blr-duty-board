@@ -88,6 +88,25 @@ tr.nextrow td.ba{color:var(--accent)}
 tr.inprog td{background-color:var(--accent-soft)}
 tr.inprog td.ba{color:var(--accent)}
 td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
+/* captain and crew names under each flight (kept on this phone only) */
+tr.hascrew td{border-bottom:0;padding-bottom:2px}
+tr.crewrow td{padding:0 10px 8px}
+tr.crewrow.hl td{background-color:var(--accent-soft)}
+.crewbtn{display:block;width:100%;text-align:left;border:0;background:none;padding:4px 0;font-size:.82rem;line-height:1.35;color:var(--ink)}
+.crewbtn.add{color:var(--muted)}
+.crewbtn .r{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:5px}
+.crewbtn .ln{display:block;overflow-wrap:anywhere}
+tr.crewrow.dim .crewbtn{color:var(--muted)}
+.crewbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#crew-title{color:var(--ink)}
+.cf{display:flex;flex-direction:column;gap:4px}
+.cf label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cf input,.cf textarea{font:inherit;font-size:1rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%}
+.cf textarea{min-height:8.5em;resize:vertical}
+.cf input:focus,.cf textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.crow{display:flex;gap:8px}
+.crow .btn{flex:1;padding:12px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#1A1205}
 .prog{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
 .prog .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .prog .item{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border:0;background:none;padding:2px 0;text-align:left;width:100%}
@@ -286,11 +305,30 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   </div>
   <div class="note" id="status"></div>
   <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
+  <div class="note">Tap the line under a flight to add or change the captain, first officer and cabin crew names. Names stay on this phone only and are deleted after 4 days.</div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
   </section>
 </div>
 
 <button class="fab" id="bapos-open" type="button" aria-haspopup="dialog">BA +ve</button>
+
+<div class="sheet" id="crew" role="dialog" aria-modal="true" aria-labelledby="crew-title" hidden>
+ <div class="wrap">
+  <div class="sh-head">
+    <h2 id="crew-title">Crew</h2>
+    <button class="btn" id="crew-close" type="button">Close</button>
+  </div>
+  <div class="note" id="crew-sub"></div>
+  <div class="cf"><label for="crew-capt">Captain</label><input id="crew-capt" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next"></div>
+  <div class="cf"><label for="crew-fo">First officer</label><input id="crew-fo" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next"></div>
+  <div class="cf"><label for="crew-cabin">Cabin crew (one name per line)</label><textarea id="crew-cabin" autocomplete="off" autocapitalize="words" spellcheck="false"></textarea></div>
+  <div class="crow">
+    <button class="btn pri" id="crew-save" type="button">Save</button>
+    <button class="btn" id="crew-clear" type="button">Clear names</button>
+  </div>
+  <div class="note">Saved on this phone only. Nothing is uploaded. Names are deleted 4 days after you save them.</div>
+ </div>
+</div>
 
 <div class="sheet" id="bapos" role="dialog" aria-modal="true" aria-labelledby="bapos-title" hidden>
  <div class="wrap">
@@ -338,6 +376,25 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
     try{ localStorage.setItem("baDone", JSON.stringify(doneMap)); }catch(e){}
   }
   const fKey = f => isoDate(f.stdMs)+"|"+f.no+"|"+f.std;
+  // captain and crew names per flight, kept on this phone only (never sent anywhere)
+  let crewMap = {};
+  try{ crewMap = JSON.parse(localStorage.getItem("crewNames")||"{}")||{}; }catch(e){ crewMap = {}; }
+  function saveCrew(){
+    const cutoff = Date.now()-4*86400000;
+    Object.keys(crewMap).forEach(k=>{ if(!crewMap[k] || crewMap[k].t<cutoff) delete crewMap[k]; });
+    try{ localStorage.setItem("crewNames", JSON.stringify(crewMap)); }catch(e){}
+  }
+  saveCrew();
+  let crewKey = null;
+  function openCrew(f){
+    crewKey = fKey(f);
+    const c = crewMap[crewKey] || {};
+    $("crew-title").textContent = f.no+" → "+f.code;
+    $("crew-sub").textContent = f.to+" · STD "+f.std+" · BA "+hhmm(f.baMs)+" · "+dayLabel(f.stdMs);
+    $("crew-capt").value = c.capt||""; $("crew-fo").value = c.fo||""; $("crew-cabin").value = (c.cabin||[]).join("\n");
+    $("crew").hidden = false; document.body.style.overflow = "hidden";
+  }
+  function closeCrew(){ $("crew").hidden = true; document.body.style.overflow = ""; crewKey = null; }
   const departed = f => Date.now() >= f.stdMs;
   const isDone = f => departed(f) || !!doneMap[fKey(f)];
   const SHIFTS = [
@@ -438,6 +495,25 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
       const bac=td("ba"); bac.textContent=hhmm(f.baMs);
       if(!done && now>f.baMs+OVERDUE_MS) bac.classList.add("late");
       rows.appendChild(tr);
+      // line under the flight: captain, first officer, cabin crew (tap to add or change)
+      tr.classList.add("hascrew");
+      const cr=document.createElement("tr"), cc=document.createElement("td"), cb=document.createElement("button"), c=crewMap[fKey(f)];
+      cr.className="crewrow"+(done?" dim":"")+((tr.classList.contains("nextrow")||tr.classList.contains("inprog"))?" hl":"");
+      cc.colSpan=4; cb.type="button"; cb.className="crewbtn";
+      const line=parts=>{ const d=document.createElement("span"); d.className="ln";
+        parts.forEach(([role,val],i)=>{ if(i) d.append(" · "); const r=document.createElement("span"); r.className="r"; r.textContent=role; d.append(r,val); });
+        cb.appendChild(d); };
+      if(c){
+        const fd=[]; if(c.capt) fd.push(["Capt",c.capt]); if(c.fo) fd.push(["FO",c.fo]);
+        if(fd.length) line(fd);
+        if(c.cabin && c.cabin.length) line([["Cabin",c.cabin.join(", ")]]);
+        cb.setAttribute("aria-label","Change captain and crew names for "+f.no);
+      } else {
+        cb.classList.add("add"); cb.textContent="+ Add captain and crew";
+        cb.setAttribute("aria-label","Add captain and crew names for "+f.no);
+      }
+      cb.addEventListener("click",()=>openCrew(f));
+      cc.appendChild(cb); cr.appendChild(cc); rows.appendChild(cr);
     });
 
     const nb=$("next"); nb.textContent="";
@@ -527,6 +603,19 @@ td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
   render(); load(false);
   setInterval(render, 30000);
   setInterval(()=>load(false), 15*60000);
+  $("crew-close").addEventListener("click",closeCrew);
+  $("crew-save").addEventListener("click",()=>{
+    if(!crewKey) return;
+    const clean=v=>v.replace(/\s+/g," ").trim();
+    const capt=clean($("crew-capt").value), fo=clean($("crew-fo").value);
+    const cabin=$("crew-cabin").value.split(/[\n,]+/).map(clean).filter(Boolean);
+    if(capt||fo||cabin.length) crewMap[crewKey]={capt,fo,cabin,t:Date.now()}; else delete crewMap[crewKey];
+    saveCrew(); closeCrew(); render();
+  });
+  $("crew-clear").addEventListener("click",()=>{ if(crewKey) delete crewMap[crewKey]; saveCrew(); closeCrew(); render(); });
+  $("crew-capt").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("crew-fo").focus(); } });
+  $("crew-fo").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("crew-cabin").focus(); } });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("crew").hidden) closeCrew(); });
   $("refresh").addEventListener("click",()=>load(true));
   document.addEventListener("visibilitychange",()=>{
     if(document.visibilityState==="visible"){ const p=autoPick(); state.dayOff=p.dayOff; state.shift=p.shift; load(false); }

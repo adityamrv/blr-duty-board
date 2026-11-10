@@ -6,6 +6,11 @@ A small installable web app: Akasa Air departures from Bengaluru (BLR) for each 
 - Data: public FlightStats schedule, refreshed every 3 hours by the GitHub Action in `.github/workflows/update-data.yml` (`tools/fetch_days.py` writes `data.json`). Scheduled times only; delays are not shown.
 - Install: open the site in Chrome on Android → ⋮ → Install and create shortcut.
 
+## Captain and crew names
+
+- Under each flight there is a line for the captain, first officer and cabin crew. Tap it to add or change the names.
+- Names are saved on the phone only (browser storage), never in this repository, and are deleted 4 days after saving.
+
 ## Roster tab
 
 - The **Roster** tab shows the BLR medical team duty roster from `roster.json`: your shift today and tomorrow, who is on duty today, and a sideways-scrolling grid (dates across; Morning, Evening, Night, Off / away down each column).
