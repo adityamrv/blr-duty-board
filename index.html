@@ -423,7 +423,8 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
   saveCrew();
   // one person = [rank, name, report time "HH:MM" (India), tag]; ranks as in the crew roster: CP captain, FO first officer,
   // IFM in-flight manager, CC1 / CC2 cabin crew. Tag is STANDBY, TRAVEL or DEADHEAD when the person is not operating the flight.
-  const RANKS = ["CP","FO","IFM","CC1","CC2"];
+  const RANKS = ["CP","SPFO","FO","IFM","SCC","CC1","CC2","TCC"];   // SPFO, SCC, TCC also appear in the roster
+  const PILOTS = ["CP","SPFO","FO"];
   const rankPos = r => { const i=RANKS.indexOf(r); return i<0 ? RANKS.length : i; };
   const peopleOf = c => !c || !c.crew ? [] : c.crew.slice().sort((a,b)=>rankPos(a[0])-rankPos(b[0]));
   const pid = p => p[0]+"|"+p[1];
@@ -649,7 +650,7 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
         // drop-down: pilots on the left, cabin crew on the right, one tick box each
         const list=document.createElement("div"); list.className="cplist";
         const cols=document.createElement("div"); cols.className="cpcols";
-        const isPilot=p=>p[0]==="CP"||p[0]==="FO";
+        const isPilot=p=>PILOTS.includes(p[0]);
         [["Pilots",people.filter(isPilot)],["Cabin crew",people.filter(p=>!isPilot(p))]].forEach(([head,grp])=>{
           if(!grp.length) return;
           const col=document.createElement("div"); col.className="cpcol";
