@@ -1,6 +1,6 @@
 // Duty Board service worker: app shell works offline; flight data is fetched fresh
 // when online and falls back to the last saved copy when offline.
-const SHELL = "duty-board-shell-v12";
+const SHELL = "duty-board-shell-v13";
 const DATA = "duty-board-data";
 const SHELL_FILES = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
@@ -17,7 +17,7 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;
-  const dataFile = ["data.json", "roster.json"].find(f => url.pathname.endsWith("/" + f));
+  const dataFile = ["data.json", "roster.json", "crew.json", "crewkeys.json"].find(f => url.pathname.endsWith("/" + f));
   if (dataFile) {
     // network first, saved copy when offline
     e.respondWith(fetch(e.request, { cache: "no-store" }).then(res => {

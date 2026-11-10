@@ -6,10 +6,13 @@ A small installable web app: Akasa Air departures from Bengaluru (BLR) for each 
 - Data: public FlightStats schedule, refreshed every 3 hours by the GitHub Action in `.github/workflows/update-data.yml` (`tools/fetch_days.py` writes `data.json`). Scheduled times only; delays are not shown.
 - Install: open the site in Chrome on Android → ⋮ → Install and create shortcut.
 
-## Captain and crew names
+## Crew list (captain, first officer, cabin crew per flight)
 
-- Under each flight there is a line for the captain, first officer and cabin crew. Tap it to add or change the names.
-- Names are saved on the phone only (browser storage), never in this repository, and are deleted 4 days after saving.
+- Under a flight that has a crew list there is one small line, `▸ Crew 2/6` (count only, no names). Tap it to open the names and tick each one off; it closes by itself after 45 seconds, when another flight is opened, or when the app is left. When every name is ticked the flight's BA is marked done. "Change names" edits one flight on the phone.
+- This repository is public, so names are never stored here in plain text. The day's list is committed only as `crew.json`, locked (AES-256-GCM, key wrapped with RSA-OAEP) so that only phones listed in `crewkeys.json` can open it. The phone's private key is made in the app and never leaves it.
+- One-time setup per phone: in the app tap "Crew list: set up this phone", copy the code (`DB1.…`), send it to Claude. Claude runs `python3 tools/lock_crew.py add-phone "DB1.…" "label"` and commits `crewkeys.json`.
+- Daily ("today's crew list" + roster pictures in chat): Claude reads the pictures, writes a plain list **outside the repository** (scratchpad), runs `python3 tools/lock_crew.py lock <plain file>`, commits and pushes `crew.json` only, then deletes the plain file. Format and rules are in the docstring of `tools/lock_crew.py`. Flight keys are `YYYY-MM-DD|QP 1234` (India-time departure date, flight number as in `data.json`).
+- Never commit crew names in plain text anywhere: not in files, commit messages, branch names or pull requests.
 
 ## Roster tab
 
