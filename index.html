@@ -16,14 +16,14 @@
 /* Layout: one-column airside ops card for a phone — controls on top, next BA up front, departures table below. */
 :root{
   --bg:#0C141F; --surface:#131E2D; --ink:#E5EBF2; --muted:#8B9AAC; --line:#22324A;
-  --accent:#F09A3E; --accent-soft:#2E2114; --warn:#F07A50; --warn-soft:#3A1912;
+  --accent:#F09A3E; --accent-soft:#2E2114; --warn:#FF5252; --warn-soft:#3F1418; --ok:#3DD68C; --ok-soft:#10301F;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:dark;
 }
 @media (prefers-color-scheme: light){:root{
   --bg:#EDF0F3; --surface:#FFFFFF; --ink:#132033; --muted:#5A6A7D; --line:#D4DBE3;
-  --accent:#D9771A; --accent-soft:#FBEBDA; --warn:#B4441C; --warn-soft:#FBE3DA; color-scheme:light}}
+  --accent:#D9771A; --accent-soft:#FBEBDA; --warn:#C62828; --warn-soft:#FCE0E0; --ok:#1B8A4C; --ok-soft:#DCF3E6; color-scheme:light}}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg);margin:0}
@@ -96,13 +96,14 @@ tbody tr.tap:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 tr.done td{color:var(--muted);background-image:linear-gradient(var(--muted),var(--muted));background-size:100% 1.5px;background-position:0 50%;background-repeat:no-repeat}
 tr.nextrow td{background-color:var(--accent-soft)}
 tr.nextrow td.ba{color:var(--accent)}
-tr.inprog td{background-color:var(--accent-soft)}
-tr.inprog td.ba{color:var(--accent)}
+tr.inprog td{background-color:var(--ok-soft)}
+tr.inprog td.ba{color:var(--ok)}
 td.ba.late,tr.nextrow td.ba.late{color:var(--warn)}
 /* crew names under a flight: closed by default (count only), open to tick names off */
 tr.hascrew td{border-bottom:0;padding-bottom:2px}
 tr.crewrow td{padding:0 10px 8px}
 tr.crewrow.hl td{background-color:var(--accent-soft)}
+tr.crewrow.hl.ip td{background-color:var(--ok-soft)}
 .crewbtn{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;padding:4px 0;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .crewbtn .chev{display:inline-block;width:.8em;transition:transform .15s}
 .crewbtn[aria-expanded="true"] .chev{transform:rotate(90deg)}
@@ -111,7 +112,7 @@ tr.crewrow.hl td{background-color:var(--accent-soft)}
 .crewbtn .cg.all{color:var(--muted);font-weight:400}
 .crewbtn .sep{opacity:.6}
 /* late: someone not ticked 15 min after their report time */
-tr.crewlate td,tr.crewrow.late td{background-color:var(--warn-soft)}
+tr.crewlate td,tr.crewrow.late td,tr.crewrow.hl.late td,tr.crewrow.hl.ip.late td{background-color:var(--warn-soft)}
 tr.crewlate td.ba{color:var(--warn)}
 .crewbtn .cg.late{color:var(--warn);font-weight:700}
 .cp .x .late{color:var(--warn);font-weight:700}
@@ -149,7 +150,7 @@ tr.crewlate td.ba{color:var(--warn)}
 .prog .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .prog .item{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border:0;background:none;padding:2px 0;text-align:left;width:100%}
 .prog .item .f{font-weight:600}
-.prog .item .r{font-family:var(--display);font-weight:600;font-size:1.1rem;color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.prog .item .r{font-family:var(--display);font-weight:600;font-size:1.1rem;color:var(--ok);white-space:nowrap;font-variant-numeric:tabular-nums}
 .prog .item.over .f,.prog .item.over .r{color:var(--warn)}
 .next .in{white-space:nowrap;font-size:1.15rem}
 @media (max-width:380px){.seg .lbl{font-size:.95rem}}
@@ -752,6 +753,7 @@ tr.crewlate td.ba{color:var(--warn)}
       if(people.length){
         tr.classList.add("hascrew");
         const cr=crewLine(cKey(f), people, f, tr.classList.contains("nextrow")||tr.classList.contains("inprog"));
+        if(tr.classList.contains("inprog")) cr.classList.add("ip");
         if(cr.classList.contains("late")) tr.classList.add("crewlate");   // someone is unticked 15 min past their report time: whole card red
         rows.appendChild(cr);
       }
