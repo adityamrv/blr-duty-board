@@ -216,7 +216,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
 .note.bad{color:var(--warn);font-weight:600}
 
 /* Tabs: Flights/BA and Roster */
-#tabs{grid-template-columns:1.3fr 1fr 1fr}
+#tabs{grid-template-columns:1.45fr 1fr 1fr 1fr}
 #s-period{grid-template-columns:1fr 1fr}
 .chg{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:2px}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -240,7 +240,8 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
 .logi:last-child{border-bottom:0}
 .logi .w{font-weight:600}
 .logi .m{color:var(--muted);font-size:.78rem}
-#tabs .lbl{font-size:1.1rem}
+#tabs .lbl{font-size:.92rem;white-space:nowrap;letter-spacing:0}
+#tabs button{padding:8px 2px}
 .view{display:flex;flex-direction:column;gap:14px}
 
 /* Roster: shift colours as in the approved roster page */
@@ -286,6 +287,29 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
 .rbox td.v.now{box-shadow:inset 2px 0 0 var(--accent),inset -2px 0 0 var(--accent)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;color:var(--muted);align-items:center}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+
+/* Verify tab: station verification checklist (full day) */
+.vhead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.vhead .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.vhead .n{font-family:var(--display);font-weight:700;font-size:1.1rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.vhead .n .o{color:var(--accent)} .vhead .n .g{color:var(--ok)} .vhead .n .r{color:var(--warn)}
+.vhead .m{font-size:.75rem;color:var(--muted)}
+.vhead .btn.arm{border-color:var(--warn);color:var(--warn)}
+.vgrp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.vgrp .h{font-family:var(--display);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:2px 4px}
+.vst{border-radius:9px;border:1px solid var(--warn);border-left-width:6px;background:var(--warn-soft)}
+.vst.or{border-color:var(--accent);background:var(--accent-soft)}
+.vst.gr{border-color:var(--ok);background:var(--ok-soft)}
+.vst summary{list-style:none;display:flex;align-items:center;gap:10px;padding:9px 10px;cursor:pointer}
+.vst summary::-webkit-details-marker{display:none}
+.vst summary .c{font-family:var(--display);font-weight:700;font-size:1.25rem;letter-spacing:.04em;min-width:3.2em}
+.vst summary .city{font-size:.8rem;color:var(--muted);flex:1}
+.vst summary .cnt{font-family:var(--display);font-weight:700;font-size:1rem;color:var(--warn);font-variant-numeric:tabular-nums}
+.vst.or summary .cnt{color:var(--accent)} .vst.gr summary .cnt{color:var(--ok)}
+.vst summary .ar{color:var(--muted);transition:transform .15s} .vst[open] summary .ar{transform:rotate(90deg)}
+.vst .list{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:0 10px 10px}
+.vst label{display:flex;align-items:center;gap:8px;font-size:.92rem;padding:7px 4px;cursor:pointer}
+.vst input{width:20px;height:20px;accent-color:var(--ok);flex:none}
 </style>
 </head>
 <body>
@@ -305,6 +329,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     <button type="button" id="tab-ba" aria-pressed="true"><span class="lbl">Flights · BA</span></button>
     <button type="button" id="tab-roster" aria-pressed="false"><span class="lbl">Roster</span></button>
     <button type="button" id="tab-stats" aria-pressed="false"><span class="lbl">Stats</span></button>
+    <button type="button" id="tab-verify" aria-pressed="false"><span class="lbl">Verify</span></button>
   </div>
 
   <section class="view" id="view-stats" hidden>
@@ -368,6 +393,18 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
   <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. No names are shown in alerts. <span class="webonly">In the browser they work only while this app is open. For alerts with the phone locked, install the <a href="https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk">Android app</a>.</span><span class="nativeonly">In this Android app they also come when the app is closed or the phone is locked. Open the app at the start of each duty so it can set the alerts for that shift.</span></div>
   <div class="note"><button class="linkbtn" id="alert-test" type="button">Send a test alert in 1 minute</button></div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
+  </section>
+  <section class="view" id="view-verify" hidden>
+    <div class="vhead">
+      <div>
+        <div class="k">Verification · full day</div>
+        <div class="n" id="v-count"></div>
+        <div class="m" id="v-since"></div>
+      </div>
+      <button class="btn" id="v-reset" type="button">Reset</button>
+    </div>
+    <div id="v-groups" class="view"></div>
+    <div class="note">Tap a station to open its checklist. Red: not done. Orange: blank test, registers and Excel sheet ticked, verification still open. Green: all four ticked. Ticks stay on this phone until you press Reset (tap it twice).</div>
   </section>
 </div>
 
@@ -1345,13 +1382,80 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
 </script>
 <script>
 (function(){
+  // ---------- Verify tab: full-day station verification checklist, kept on this phone until Reset ----------
+  const $ = id => document.getElementById(id);
+  const GROUPS = [["BLR"],["BOM"],["DEL","AYJ","LKO","VNS"],["AMD","GOP","IXD"],["SXR"],["IXB","CCU"],["GAU"],["IXA"],
+    ["BBI","DBR","DIB"],["PNQ","GOX","GWL"],["HYD","CCJ"],["MAA","VTZ"],["COK"],["IXZ"],["NMI"],["DXN","JAI","UDR"]];
+  const CITY = {BLR:"Bengaluru",BOM:"Mumbai",DEL:"Delhi",AYJ:"Ayodhya",LKO:"Lucknow",VNS:"Varanasi",AMD:"Ahmedabad",
+    GOP:"Gorakhpur",IXD:"Prayagraj",SXR:"Srinagar",IXB:"Bagdogra",CCU:"Kolkata",GAU:"Guwahati",IXA:"Agartala",
+    BBI:"Bhubaneswar",DBR:"Darbhanga",DIB:"Dibrugarh",PNQ:"Pune",GOX:"Goa Mopa",GWL:"Gwalior",HYD:"Hyderabad",
+    CCJ:"Kozhikode",MAA:"Chennai",VTZ:"Visakhapatnam",COK:"Kochi",IXZ:"Sri Vijaya Puram",NMI:"Navi Mumbai",
+    DXN:"Noida",JAI:"Jaipur",UDR:"Udaipur"};
+  const ITEMS = [["blank","Blank test"],["reg","Registers"],["xls","Excel sheet"],["ver","Verification"]];
+  const KEY = "verifyChecks", KEY_T = "verifyResetAt";
+  let V = {}; try{ V = JSON.parse(localStorage.getItem(KEY)||"{}")||{}; }catch(e){ V = {}; }
+  const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(V)); }catch(e){} };
+  // green = all four; orange = first three without verification; red = anything else
+  const state = c => { const x = V[c]||{}; if(x.blank && x.reg && x.xls) return x.ver ? "gr" : "or"; return ""; };
+  const ticks = c => ITEMS.filter(([k])=>(V[c]||{})[k]).length;
+  const open = new Set();
+
+  function head(){
+    const all = GROUPS.flat(); let g=0,o=0;
+    all.forEach(c=>{ const s=state(c); if(s==="gr") g++; else if(s==="or") o++; });
+    $("v-count").innerHTML = '<span class="g">'+g+' green</span> · <span class="o">'+o+' orange</span> · <span class="r">'+(all.length-g-o)+' red</span>';
+    let t=null; try{ t=localStorage.getItem(KEY_T); }catch(e){}
+    $("v-since").textContent = t ? "Since reset: "+new Date(+t).toLocaleString("en-IN",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}) : "";
+  }
+  function paint(c){
+    const el = document.querySelector('.vst[data-c="'+c+'"]'); if(!el) return;
+    el.className = ("vst "+state(c)).trim();
+    el.querySelector(".cnt").textContent = ticks(c)+"/4";
+  }
+  function build(){
+    let h = "";
+    GROUPS.forEach((grp,i)=>{
+      h += '<div class="vgrp"><div class="h">'+(i+1)+' · '+grp.join(" / ")+'</div>';
+      grp.forEach(c=>{
+        h += '<details class="'+("vst "+state(c)).trim()+'" data-c="'+c+'"'+(open.has(c)?' open':'')+'><summary><span class="c">'+c+'</span><span class="city">'+(CITY[c]||"")+
+          '</span><span class="cnt">'+ticks(c)+'/4</span><span class="ar">▸</span></summary><div class="list">';
+        ITEMS.forEach(([k,l])=>{ h += '<label><input type="checkbox" data-k="'+k+'"'+((V[c]||{})[k]?' checked':'')+'>'+l+'</label>'; });
+        h += '</div></details>';
+      });
+      h += '</div>';
+    });
+    $("v-groups").innerHTML = h;
+    document.querySelectorAll(".vst").forEach(d=>{
+      const c = d.dataset.c;
+      d.addEventListener("toggle",()=>{ if(d.open) open.add(c); else open.delete(c); });
+      d.querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{
+        V[c] = V[c]||{}; V[c][inp.dataset.k] = inp.checked; save(); paint(c); head();
+      }));
+    });
+    head();
+  }
+  // Reset needs two taps within 4 s, so one stray tap cannot wipe the list
+  let armed = null;
+  $("v-reset").addEventListener("click",()=>{
+    const b = $("v-reset");
+    if(!armed){ b.textContent="Tap again to reset"; b.classList.add("arm"); armed=setTimeout(()=>{ armed=null; b.textContent="Reset"; b.classList.remove("arm"); },4000); return; }
+    clearTimeout(armed); armed=null; b.textContent="Reset"; b.classList.remove("arm");
+    V = {}; save(); open.clear();
+    try{ localStorage.setItem(KEY_T, String(Date.now())); }catch(e){}
+    build();
+  });
+  build();
+})();
+</script>
+<script>
+(function(){
   // ---------- Tabs + duty roster (roster.json: raw cell text from the official roster, per person per date) ----------
   const $ = id => document.getElementById(id);
   const IST_MS = 330*60000;
   let R = null, offline = false, scrolled = false;
 
   // tabs, last choice remembered on this phone
-  const TABS=["ba","roster","stats"];
+  const TABS=["ba","roster","stats","verify"];
   function showTab(t){
     TABS.forEach(k=>{ $("view-"+k).hidden = t!==k; $("tab-"+k).setAttribute("aria-pressed",String(t===k)); });
     try{ localStorage.setItem("tab",t); }catch(e){}
@@ -1529,7 +1633,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     render();
   }
   let t0="ba"; try{ t0=localStorage.getItem("tab")||"ba"; }catch(e){}
-  showTab(["ba","roster","stats"].includes(t0)?t0:"ba");
+  showTab(["ba","roster","stats","verify"].includes(t0)?t0:"ba");
   load();
   $("refresh").addEventListener("click",load);
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") load(); });

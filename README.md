@@ -33,6 +33,12 @@ A small installable web app: Akasa Air departures from Bengaluru (BLR) for each 
 
 - Pie chart of one person's duty split (morning, evening, night, off, leave, other), for "So far" (up to today) or the whole saved roster; team counts table (tap a name to see their pie); change log, newest first.
 
+## Verify tab
+
+- Full-day station verification checklist. Stations are in Aditya's 16 groups: BLR · BOM · DEL/AYJ/LKO/VNS · AMD/GOP/IXD · SXR · IXB/CCU · GAU · IXA · BBI/DBR/DIB · PNQ/GOX/GWL · HYD/CCJ · MAA/VTZ · COK · IXZ · NMI · DXN/JAI/UDR (`GROUPS` in index.html).
+- Each station opens to four ticks: Blank test, Registers, Excel sheet, Verification. Red by default; orange when the first three are ticked but not Verification; green when all four are ticked. The header counts green / orange / red.
+- Ticks are kept on the phone (`verifyChecks` in local storage) until Reset is tapped twice; the time of the last reset is shown. Nothing is sent to the repository.
+
 ## Android app (alerts with the phone locked)
 
 - `android-app/` is a thin Android shell (Capacitor) that opens the live Duty Board and adds the phone's alarm system through the local-notifications plugin. `.github/workflows/android-app.yml` builds it on every change under `android-app/` and publishes `duty-board.apk` on the `android-app` release: https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk
