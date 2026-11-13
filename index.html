@@ -118,6 +118,22 @@ tr.crewlate td.ba{color:var(--warn)}
 .cp .x .late{color:var(--warn);font-weight:700}
 .cp.late .box{border-color:var(--warn)}
 .crewbtn:focus-visible,.cp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.csearch{display:flex;flex-direction:column;gap:6px}
+.csearch input{font:inherit;font-size:1rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.csearch input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.cres{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.cres .rw{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.cres .rw:last-child{border-bottom:0}
+.cres .rw .cp{flex:none;width:auto;padding:10px}
+.cres .go{flex:1;min-width:0;border:0;background:none;text-align:left;padding:8px 10px 8px 0;color:var(--ink);line-height:1.25}
+.cres .go .n{display:block;font-size:.95rem;overflow-wrap:anywhere}
+.cres .go .r{font-size:.62rem;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-right:6px}
+.cres .go .m{display:block;font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.cres .go .m .late{color:var(--warn);font-weight:700}
+.cres .rw.on .go .n{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.cres .empty{padding:10px 12px;font-size:.85rem;color:var(--muted)}
+.cres .go:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
 .cplist{margin:2px 0 4px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
 .cpcols{display:flex;align-items:stretch}
 .cpcol{flex:1 1 0;min-width:0}
@@ -335,6 +351,10 @@ tr.crewlate td.ba{color:var(--warn)}
   <div class="prog" id="prog" hidden></div>
   <div class="next" id="next" hidden></div>
   <div class="sumrow"><div class="summary" id="summary"></div><button class="btn alertbtn" id="alerts" type="button" aria-pressed="false">Alerts off</button></div>
+  <div class="csearch" id="csearch" hidden>
+    <input id="cq" type="search" placeholder="Find crew by name or flight" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Find crew by name or flight number">
+    <div class="cres" id="cres" role="list" hidden></div>
+  </div>
 
   <div class="tablebox">
     <table>
@@ -640,6 +660,77 @@ tr.crewlate td.ba{color:var(--warn)}
   function keepOpen(k){ openKey=k; openUntil=Date.now()+OPEN_MS; clearTimeout(openTimer); openTimer=setTimeout(()=>{ if(Date.now()>=openUntil){ openKey=null; render(); } },OPEN_MS+200); }
   function shutCrew(){ openKey=null; clearTimeout(openTimer); }
 
+  // ---- find crew by name or flight number (today's and the viewed shift's lists) ----
+  let foundKey=null, searchTimer=null;
+  const norm = t => String(t).toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  function flightInfo(date, no){
+    const fl=(state.days[date] && state.days[date].flights)||[];
+    return fl.find(x=>x.no===no) || null;
+  }
+  function renderSearch(win, now){
+    const box=$("csearch"), res=$("cres");
+    const dates=[...new Set([isoDate(now), isoDate(win.base+3600000), isoDate(win.base+86400000+3600000)])];
+    const keys=Object.keys(crewMap).filter(k=>dates.includes(k.slice(0,10)) && peopleOf(crewMap[k]).length);
+    box.hidden = !keys.length;
+    const q=norm($("cq").value), words=q.split(" ").filter(Boolean);
+    if(!keys.length || q.length<2){ res.hidden=true; res.textContent=""; return; }
+    const digits=q.replace(/\D/g,"");
+    // one result per person per date; a person on two flights shows both
+    const hits={};
+    keys.forEach(k=>{
+      const date=k.slice(0,10), no=k.slice(11);
+      peopleOf(crewMap[k]).forEach(p=>{
+        const name=norm(p[1]), byName=words.every(w=>name.includes(w)), byFlight=digits.length>=3 && no!=="OTHER" && no.replace(/\D/g,"").includes(digits) && /^[a-z ]*\d+$/.test(q);
+        if(!byName && !byFlight) return;
+        const id=date+"|"+pid(p), h=hits[id]||(hits[id]={p, date, keys:[]}); h.keys.push(k);
+      });
+    });
+    const list=Object.values(hits).sort((a,b)=>(a.date+(a.p[2]||"99")).localeCompare(b.date+(b.p[2]||"99"))).slice(0,12);
+    res.hidden=false; res.textContent="";
+    if(!list.length){ const e=document.createElement("div"); e.className="empty"; e.textContent="No match in the loaded crew list."; res.appendChild(e); return; }
+    const today=isoDate(now);
+    list.forEach(h=>{
+      const k0=h.keys[0], on=isTicked(k0,h.p);
+      const rw=document.createElement("div"); rw.className="rw"+(on?" on":""); rw.setAttribute("role","listitem");
+      const tb=document.createElement("button"); tb.type="button"; tb.className="cp"; tb.setAttribute("aria-pressed",String(on));
+      tb.setAttribute("aria-label",(on?"Untick ":"Tick ")+h.p[1]);
+      tb.innerHTML='<span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg></span>';
+      tb.addEventListener("click",()=>{
+        setTick(k0,h.p,!on);
+        if(on) h.keys.forEach(k=>{ const f=flightInfo(h.date,k.slice(11)); if(f) delete doneMap[h.date+"|"+f.no+"|"+f.std]; });
+        saveCrew(); saveDone(); idleSearch(); render();
+        const q=$("cq"); try{ q.focus({preventScroll:true}); q.select(); }catch(e){}
+      });
+      const go=document.createElement("button"); go.type="button"; go.className="go";
+      const n=document.createElement("span"); n.className="n"; const r=document.createElement("span"); r.className="r"; r.textContent=h.p[0]; n.append(r,h.p[1]);
+      const m=document.createElement("span"); m.className="m";
+      const fl=h.keys.map(k=>{ const no=k.slice(11); if(no==="OTHER") return "No flight"; const f=flightInfo(h.date,no); return no+(f?" → "+f.code+" "+f.std:""); });
+      const bits=[fl.join(", ")];
+      if(h.p[3]) bits.push(h.p[3].toLowerCase());
+      m.append(bits.join(" · "));
+      if(h.p[2]){ m.append(" · "); const rs=document.createElement("span"); rs.textContent="rep "+h.p[2];
+        const q=h.date.split("-").map(Number), due=istMs(q[0],q[1]-1,q[2],0,0)+hm(h.p[2])*60000;
+        if(!on && now>due+OVERDUE_MS && now<due+12*3600000) rs.className="late"; m.appendChild(rs); }
+      if(h.date!==today){ const q=h.date.split("-").map(Number); m.append(" · "+dayLabel(istMs(q[0],q[1]-1,q[2],12,0))); }
+      go.append(n,m);
+      go.setAttribute("aria-label","Show "+h.p[1]+" in the flight list");
+      go.addEventListener("click",()=>{
+        // open that flight's list in the board, if it is in the shift on screen
+        const k=h.keys.find(x=>document.querySelector('tr.crewrow[data-ck="'+CSS.escape(x)+'"]'));
+        if(!k){ m.textContent="Not in the shift on screen. Switch day or shift to see this flight."; return; }
+        foundKey=k; keepOpen(k); render();
+        const row=document.querySelector('tr.crewrow[data-ck="'+CSS.escape(k)+'"]');
+        const top=(row.previousElementSibling||row).getBoundingClientRect().top+window.scrollY-12;
+        window.scrollTo({top, behavior:"smooth"});
+        setTimeout(()=>{ foundKey=null; }, 4000);
+      });
+      rw.append(tb,go); res.appendChild(rw);
+    });
+  }
+  // names never stay on screen: the search clears itself after a minute without use, and when the app is left
+  function clearSearch(){ clearTimeout(searchTimer); if($("cq").value){ $("cq").value=""; render(); } }
+  function idleSearch(){ clearTimeout(searchTimer); searchTimer=setTimeout(clearSearch,60000); }
+
   let crewKey = null;
   function openCrew(ck, title, sub){
     crewKey = ck;
@@ -772,6 +863,7 @@ tr.crewlate td.ba{color:var(--warn)}
       if(cr.classList.contains("late")) tr.classList.add("crewlate");
       rows.appendChild(cr);
     });
+    renderSearch(win, now);
     function crewLine(ck, people, f, hl, title, sub, dayBase){
       const cr=document.createElement("tr"), cc=document.createElement("td"), cb=document.createElement("button");
       const open = openKey===ck && now<openUntil, baT=f?hhmm(f.baMs):"";
@@ -834,6 +926,7 @@ tr.crewlate td.ba{color:var(--warn)}
         const hd=document.createElement("button"); hd.type="button"; hd.textContent="Hide"; hd.addEventListener("click",()=>{ shutCrew(); render(); });
         foot.append(ed,hd); list.appendChild(foot); cc.appendChild(list);
       }
+      cr.dataset.ck=ck; if(ck===foundKey) cr.classList.add("found");
       cr.appendChild(cc); return cr;
     }
 
@@ -1058,6 +1151,9 @@ tr.crewlate td.ba{color:var(--warn)}
   $("crew-clear").addEventListener("click",()=>{ $("crew-list").value=""; $("crew-list").focus(); });
   $("cs-open").addEventListener("click",()=>{ renderCrewNote(); $("cs").hidden=false; document.body.style.overflow="hidden"; });
   $("cs-close").addEventListener("click",()=>{ $("cs").hidden=true; document.body.style.overflow=""; });
+  $("cq").addEventListener("input",()=>{ idleSearch(); render(); });
+  $("cq").addEventListener("keydown",e=>{ if(e.key==="Escape"){ clearSearch(); $("cq").blur(); } });
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState!=="visible") clearSearch(); });
   $("cs-load").addEventListener("click",()=>{ $("cs-file").value=""; $("cs-file").click(); });
   $("cs-file").addEventListener("change",async e=>{
     const file=e.target.files && e.target.files[0], out=$("cs-result"); if(!file) return;
