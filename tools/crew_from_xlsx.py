@@ -20,7 +20,7 @@ COLS = {
     "STDISTDate": ["STDISTDate", "Flight_Activity_Date", "STD_Date", "Flight_Date", "Activity_Date", "Date"],
     "Reporting_Time": ["Reporting_Time", "Report_Time", "Rep_Time"], "Activity_Type": ["Activity_Type", "Activity"],
 }
-key = lambda h: re.sub(r"[^a-z0-9]", "", str(h).lower())
+colkey = lambda h: re.sub(r"[^a-z0-9]", "", str(h).lower())
 
 def main(src, out):
     ws = openpyxl.load_workbook(src, read_only=True, data_only=True).worksheets[0]
@@ -28,8 +28,8 @@ def main(src, out):
     by = {}
     for i, h in enumerate(rows[0]):
         if h is not None:
-            by.setdefault(key(h), i)
-    ix = {c: next((by[key(n)] for n in names if key(n) in by), None) for c, names in COLS.items()}
+            by.setdefault(colkey(h), i)
+    ix = {c: next((by[colkey(n)] for n in names if colkey(n) in by), None) for c, names in COLS.items()}
     missing = [c for c, i in ix.items() if i is None]
     if missing:
         sys.exit(f"Roster columns missing: {missing}")
