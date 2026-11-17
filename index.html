@@ -652,40 +652,55 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     const x=Number(v); if(v!=="" && x>30000 && x<80000) return new Date(Date.UTC(1899,11,30)+Math.floor(x)*86400000).toISOString().slice(0,10); return ""; };
   // Same rules as tools/crew_from_xlsx.py: rows with a flight go under that flight (tag = activity unless FLY);
   // rows with no flight (standby, travel) go under "other" for their date. Staff numbers and test columns are never read.
+  // Column names change between roster exports (e.g. STDISTDate became Flight_Activity_Date on 17 Nov 2026),
+  // so each column is found by any of its known names, ignoring case, spaces and underscores.
+  const COLS = {
+    first:["First_Name","FirstName"], last:["Last_Name","LastName","Surname"], rank:["Crew_Rank","Rank"],
+    no:["Flight_Number","Flight_No","FlightNo","Flight"], date:["STDISTDate","Flight_Activity_Date","STD_Date","Flight_Date","Activity_Date","Date"],
+    rep:["Reporting_Time","Report_Time","Rep_Time"], act:["Activity_Type","Activity"],
+    std:["Flight_Time","STD","STDIST","STD_Time"], from:["Departure_Airport","Dep","From"], to:["Arrival_Airport","Arr","To"] };
+  const NEED = ["first","last","rank","no","date","rep","act"];
+  const colKey = h => String(h).toLowerCase().replace(/[^a-z0-9]/g,"");
   async function readRoster(file){
-    const rows=await sheetRows(file), ix={}; (rows[0]||[]).forEach((h,i)=>{ if(h) ix[h]=i; });
-    const need=["First_Name","Last_Name","Crew_Rank","Flight_Number","STDISTDate","Reporting_Time","Activity_Type"], miss=need.filter(c=>!(c in ix));
-    if(miss.length) throw new Error("This file does not have the column"+(miss.length>1?"s ":" ")+miss.join(", ")+". Is it the crew roster (Staff List) file?");
-    const get=(r,c)=>r[ix[c]]||"";
-    const list=rows.slice(1).map(r=>({ name:(get(r,"First_Name")+" "+get(r,"Last_Name")).replace(/\s+/g," ").trim(), rank:get(r,"Crew_Rank").toUpperCase(),
-      no:get(r,"Flight_Number").toUpperCase().replace(/^([A-Z0-9]{2})\s*(\d+)$/,"$1 $2"), date:asDate(get(r,"STDISTDate")), rep:asTime(get(r,"Reporting_Time")), act:get(r,"Activity_Type").toUpperCase() })).filter(x=>x.name);
+    const rows=await sheetRows(file), byKey={}; (rows[0]||[]).forEach((h,i)=>{ if(h && !(colKey(h) in byKey)) byKey[colKey(h)]=i; });
+    const ix={}; Object.keys(COLS).forEach(c=>{ const n=COLS[c].find(n=>colKey(n) in byKey); if(n) ix[c]=byKey[colKey(n)]; });
+    const miss=NEED.filter(c=>!(c in ix));
+    if(miss.length) throw new Error("This file does not have the column"+(miss.length>1?"s ":" ")+miss.map(c=>COLS[c].slice(0,2).join(" / ")).join(", ")+". Is it the crew roster (Staff List) file?");
+    const get=(r,c)=> c in ix ? (r[ix[c]]||"") : "";
+    const list=rows.slice(1).map(r=>({ name:(get(r,"first")+" "+get(r,"last")).replace(/\s+/g," ").trim(), rank:get(r,"rank").toUpperCase(),
+      no:get(r,"no").toUpperCase().replace(/^([A-Z0-9]{2})\s*(\d+)$/,"$1 $2"), date:asDate(get(r,"date")), rep:asTime(get(r,"rep")), act:get(r,"act").toUpperCase(),
+      std:asTime(get(r,"std")), from:get(r,"from").toUpperCase(), to:get(r,"to").toUpperCase() })).filter(x=>x.name);
     if(!list.length) throw new Error("No crew rows found in this file.");
     // rows with no flight carry no date: take the date of the nearest dated row (the one before, else the one after)
     let last=""; list.forEach(x=>{ if(x.date) last=x.date; else x.date=last; });
     let next=""; for(let i=list.length-1;i>=0;i--){ if(list[i].date) next=list[i].date; else list[i].date=next; }
-    if(!next) throw new Error("No dates found in the STDISTDate column.");
-    const flights={}, other={}, seen={}; let people=0;
+    if(!next) throw new Error("No dates found in the flight date column.");
+    const flights={}, other={}, info={}, seen={}; let people=0;
     list.forEach(x=>{
       const id=[x.date,x.no,x.rank,x.name].join("|"); if(seen[id]) return; seen[id]=1; people++;
       const person=[x.rank, x.name, x.rep, x.act==="FLY" ? "" : x.act];
-      if(x.no) (flights[x.date+"|"+x.no]||(flights[x.date+"|"+x.no]=[])).push(person); else (other[x.date]||(other[x.date]=[])).push(person);
+      if(x.no){ const k=x.date+"|"+x.no; (flights[k]||(flights[k]=[])).push(person);
+        // departure time and destination from the file, used only for flights missing from the app's schedule
+        if(!info[k] && x.std && /^[A-Z]{3}$/.test(x.to) && (!x.from || x.from==="BLR")) info[k]={std:x.std, code:x.to}; }
+      else (other[x.date]||(other[x.date]=[])).push(person);
     });
-    return {flights, other, people, dates:[...new Set(list.map(x=>x.date))].sort()};
+    return {flights, other, info, people, dates:[...new Set(list.map(x=>x.date))].sort()};
   }
   function applyRoster(data){
     const at=Date.now();
     Object.keys(crewMap).forEach(k=>{ if(data.dates.includes(k.slice(0,10))) delete crewMap[k]; });   // the file replaces those dates
-    Object.keys(data.flights).forEach(k=>{ crewMap[k]={crew:data.flights[k], t:at}; });
+    Object.keys(data.flights).forEach(k=>{ crewMap[k]={crew:data.flights[k], t:at}; if(data.info && data.info[k]) crewMap[k].f=data.info[k]; });
     Object.keys(data.other).forEach(d=>{ crewMap[d+"|OTHER"]={crew:data.other[d], t:at}; });
     localAt=at; lsSet("crewLocalAt",at); saveCrew();
     // check against the app's own flight list
-    const days=(state.data && state.data.days)||{}, unknown=[], noList=[];
+    const days=state.days||{}, unknown=[], noList=[], added=[];
     data.dates.forEach(d=>{ const fl=(days[d] && days[d].flights)||[], nos=fl.map(f=>f.no);
-      Object.keys(data.flights).forEach(k=>{ if(k.slice(0,10)===d && days[d] && !nos.includes(k.slice(11))) unknown.push(k.slice(11)); });
+      Object.keys(data.flights).forEach(k=>{ if(k.slice(0,10)===d && days[d] && !nos.includes(k.slice(11))) (data.info && data.info[k] ? added : unknown).push(k.slice(11)+(data.info && data.info[k] ? " ("+data.info[k].std+")" : "")); });
       fl.forEach(f=>{ if(!data.flights[d+"|"+f.no]) noList.push(f.no); }); });
     const nFl=Object.keys(data.flights).length, nOther=Object.values(data.other).reduce((a,v)=>a+v.length,0);
     const dayName=d=>{ const q=d.split("-").map(Number); return dayLabel(istMs(q[0],q[1]-1,q[2],12,0)); };
     let msg="Loaded "+(data.people-nOther)+" crew on "+nFl+" flights"+(nOther?" and "+nOther+" with no flight (standby, travel)":"")+", for "+data.dates.map(dayName).join(" and ")+".";
+    if(added.length) msg+=" Not in the app's schedule, added from the roster file: "+added.join(", ")+".";
     if(unknown.length) msg+=" Not in the app's flight list, so not shown: "+unknown.slice(0,8).join(", ")+(unknown.length>8?" and "+(unknown.length-8)+" more":"")+".";
     if(noList.length) msg+=" Flights in the app with no crew in this file: "+noList.slice(0,8).join(", ")+(noList.length>8?" and "+(noList.length-8)+" more":"")+".";
     return msg;
@@ -810,6 +825,8 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     const start=base+hm(sh.s)*60000; let end=base+hm(sh.e)*60000; if(end<=start) end+=86400000;
     return {sh,start,end,lo:start+BA_MS,hi:end+BA_MS,base};
   }
+  // city name for an airport code, from any flight in the schedule
+  function cityOf(code){ for(const d of Object.values(state.days||{})){ const f=(d.flights||[]).find(x=>x.code===code); if(f) return f.to; } return ""; }
   function flightsFor(win){
     const out=[], gaps=[], missing=[];
     [0,1].forEach(i=>{
@@ -821,6 +838,12 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
       (doc.flights||[]).forEach(f=>{
         const std=dayBase+hm(f.std)*60000;
         if(std>=win.lo && std<=win.hi) out.push({...f, stdMs:std, baMs:std-BA_MS, plus:i>0});
+      });
+      // flights in the loaded roster file that the public schedule does not have (extra or charter flights)
+      const have=new Set((doc.flights||[]).map(f=>f.no));
+      Object.keys(crewMap).forEach(k=>{ const e=crewMap[k]; if(k.slice(0,10)!==iso || !e.f || have.has(k.slice(11))) return;
+        const std=dayBase+hm(e.f.std)*60000;
+        if(std>=win.lo && std<=win.hi) out.push({no:k.slice(11), std:e.f.std, to:(cityOf(e.f.code)||e.f.code)+" · roster", code:e.f.code, stdMs:std, baMs:std-BA_MS, plus:i>0, extra:true});
       });
     });
     out.sort((a,b)=>a.stdMs-b.stdMs || a.no.localeCompare(b.no));
@@ -1182,7 +1205,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
       const p=known ? [m[1].toUpperCase(), m[2]] : ["", line];
       const o=old[pid(p)]; return o ? o : [p[0],p[1],"",""];   // unchanged people keep their report time and tag
     });
-    crewMap[crewKey]={crew,t:Date.now()};   // an emptied list stays empty until a newer list arrives
+    crewMap[crewKey]={...crewMap[crewKey], crew, t:Date.now()};   // keeps a roster-only flight's time; an emptied list stays empty until a newer list arrives
     const k=crewKey; saveCrew(); closeCrew(); keepOpen(k); renderCrewNote(); render();
   });
   $("crew-clear").addEventListener("click",()=>{ $("crew-list").value=""; $("crew-list").focus(); });
