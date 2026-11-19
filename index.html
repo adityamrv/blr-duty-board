@@ -74,6 +74,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .nativeonly{display:none}
 .native .nativeonly{display:inline}
 .native .webonly{display:none}
+.sumrow .btns{display:flex;gap:6px;flex:none}
 .alertbtn{flex:none;padding:5px 10px;font-size:.78rem;color:var(--muted)}
 .alertbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 
@@ -215,101 +216,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
 .note{font-size:.8rem;color:var(--muted)}
 .note.bad{color:var(--warn);font-weight:600}
 
-/* Tabs: Flights/BA and Roster */
-#tabs{grid-template-columns:1.45fr 1fr 1fr 1fr}
-#s-period{grid-template-columns:1fr 1fr}
-.chg{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:2px}
-.srow{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.srow select{font:inherit;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0;max-width:60%}
-.pie{display:grid;grid-template-columns:minmax(0,170px) 1fr;gap:14px;align-items:center}
-.pie svg{width:100%;height:auto;display:block}
-.pie path{stroke:var(--surface);stroke-width:2;transition:opacity .15s}
-.pie svg:hover path{opacity:.55} .pie svg path:hover{opacity:1}
-.pie .ctr{font-family:var(--display);font-weight:700;font-size:34px;fill:var(--ink)}
-.pie .ctr2{font-size:11px;fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-.plegend{display:flex;flex-direction:column;gap:5px;font-size:.88rem;font-variant-numeric:tabular-nums}
-.plegend div{display:flex;align-items:center;gap:7px}
-.plegend i{flex:none;width:11px;height:11px;border-radius:3px}
-.plegend b{margin-left:auto;font-weight:600}
-.plegend span.p{color:var(--muted);font-size:.78rem;width:3.2em;text-align:right}
-.stab th,.stab td{text-align:center;padding:8px 4px}
-.stab th:first-child,.stab td:first-child{text-align:left}
-.stab tr.sel td{background:var(--accent-soft)}
-.stab td.z{color:var(--muted)}
-.logi{padding:10px 12px;border-bottom:1px solid var(--line);font-size:.88rem}
-.logi:last-child{border-bottom:0}
-.logi .w{font-weight:600}
-.logi .m{color:var(--muted);font-size:.78rem}
-#tabs .lbl{font-size:.92rem;white-space:nowrap;letter-spacing:0}
-#tabs button{padding:8px 2px}
 .view{display:flex;flex-direction:column;gap:14px}
-
-/* Roster: shift colours as in the approved roster page */
-:root{--am:#FFC933;--am-soft:#3A2F10;--am-ink:#2E2000;--pm:#FF5C96;--pm-soft:#3E1828;--pm-ink:#fff;
-  --nt:#6A5CFF;--nt-soft:#25205A;--nt-ink:#fff;--t2:#2FD3C5;--t2-ink:#05201E}
-@media (prefers-color-scheme: light){:root{--am:#FFC21A;--am-soft:#FFF1C2;--am-ink:#3D2A00;--pm:#FF4F8B;--pm-soft:#FFDBE8;
-  --nt:#3B2FC9;--nt-soft:#DFDCFF;--t2:#00A396;--t2-ink:#fff}}
-.today{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-.today .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.mine{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mine .c{border-radius:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--line)}
-.mine .d{font-size:.75rem;color:var(--muted);font-weight:600}
-.mine .s{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.1;text-transform:uppercase;letter-spacing:.02em}
-.mine .c.am{background:var(--am);color:var(--am-ink);border-color:var(--am)} .mine .c.pm{background:var(--pm);color:var(--pm-ink);border-color:var(--pm)}
-.mine .c.nt{background:var(--nt);color:var(--nt-ink);border-color:var(--nt)}
-.mine .c.am .d,.mine .c.pm .d,.mine .c.nt .d{color:inherit;opacity:.8}
-.crew{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.88rem;align-items:baseline}
-.crew .t{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:.95rem;border-left:4px solid;padding-left:6px}
-.crew .t.am{border-color:var(--am)} .crew .t.pm{border-color:var(--pm)} .crew .t.nt{border-color:var(--nt)}
-.crew .sub{color:var(--muted);font-size:.8rem}
-.tag{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.05em;border-radius:4px;padding:1px 5px;vertical-align:1px}
-.tag.t2{background:var(--t2);color:var(--t2-ink)}
-.me{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:2px}
-
-.rbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:78vh;-webkit-overflow-scrolling:touch}
-.rbox table{width:auto;min-width:100%;border-collapse:separate;border-spacing:0}
-.rbox th,.rbox td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0}
-.rbox thead th{position:sticky;top:0;z-index:3;background:var(--surface);min-width:96px;text-align:center;padding:7px 4px 5px;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:2px solid var(--ink)}
-.rbox thead th b{display:block;font-family:var(--display);font-size:1.25rem;color:var(--ink);letter-spacing:0;line-height:1.05;font-weight:700}
-.rbox thead th.we b,.rbox thead th.we{color:var(--pm)}
-.rbox thead th.now{background:var(--accent-soft)} .rbox thead th.now b{color:var(--accent)}
-.rbox th.corner{left:0;z-index:4;min-width:0;width:1%}
-.rbox td.lab{position:sticky;left:0;z-index:2;background:var(--surface);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 8px;white-space:nowrap}
-.rbox td.sh{position:sticky;left:0;z-index:2;padding:5px 8px;font-family:var(--display);font-weight:700;font-size:1rem;letter-spacing:.06em;text-transform:uppercase}
-.rbox tr.h-am td{background:var(--am);color:var(--am-ink)} .rbox tr.h-pm td{background:var(--pm);color:var(--pm-ink)}
-.rbox tr.h-nt td{background:var(--nt);color:var(--nt-ink)} .rbox tr.h-off td{background:var(--line);color:var(--muted)}
-.rbox tr.am td.v{background:var(--am-soft)} .rbox tr.pm td.v{background:var(--pm-soft)} .rbox tr.nt td.v{background:var(--nt-soft)}
-.rbox td.v{padding:5px 6px;text-align:center;font-weight:600;font-size:.85rem;line-height:1.25;height:32px}
-.rbox td.v .sub{display:block;font-size:.66rem;font-weight:500;color:var(--muted)}
-.mine .c .d+.s+.d{margin-top:2px}
-.rbox td.v.dash{color:var(--muted);font-weight:400}
-.rbox tr.off td.v{font-weight:400;font-size:.78rem;color:var(--muted)}
-.rbox td.v.now{box-shadow:inset 2px 0 0 var(--accent),inset -2px 0 0 var(--accent)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;color:var(--muted);align-items:center}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
-
-/* Verify tab: station verification checklist (full day) */
-.vhead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.vhead .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.vhead .n{font-family:var(--display);font-weight:700;font-size:1.1rem;line-height:1.15;font-variant-numeric:tabular-nums}
-.vhead .n .o{color:var(--accent)} .vhead .n .g{color:var(--ok)} .vhead .n .r{color:var(--warn)}
-.vhead .m{font-size:.75rem;color:var(--muted)}
-.vhead .btn.arm{border-color:var(--warn);color:var(--warn)}
-.vgrp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px}
-.vgrp .h{font-family:var(--display);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:2px 4px}
-.vst{border-radius:9px;border:1px solid var(--warn);border-left-width:6px;background:var(--warn-soft)}
-.vst.or{border-color:var(--accent);background:var(--accent-soft)}
-.vst.gr{border-color:var(--ok);background:var(--ok-soft)}
-.vst summary{list-style:none;display:flex;align-items:center;gap:10px;padding:9px 10px;cursor:pointer}
-.vst summary::-webkit-details-marker{display:none}
-.vst summary .c{font-family:var(--display);font-weight:700;font-size:1.25rem;letter-spacing:.04em;min-width:3.2em}
-.vst summary .city{font-size:.8rem;color:var(--muted);flex:1}
-.vst summary .cnt{font-family:var(--display);font-weight:700;font-size:1rem;color:var(--warn);font-variant-numeric:tabular-nums}
-.vst.or summary .cnt{color:var(--accent)} .vst.gr summary .cnt{color:var(--ok)}
-.vst summary .ar{color:var(--muted);transition:transform .15s} .vst[open] summary .ar{transform:rotate(90deg)}
-.vst .list{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:0 10px 10px}
-.vst label{display:flex;align-items:center;gap:8px;font-size:.92rem;padding:7px 4px;cursor:pointer}
-.vst input{width:20px;height:20px;accent-color:var(--ok);flex:none}
 </style>
 </head>
 <body>
@@ -325,57 +232,13 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     </div>
   </header>
 
-  <div class="seg" id="tabs" role="group" aria-label="Section">
-    <button type="button" id="tab-ba" aria-pressed="true"><span class="lbl">Flights · BA</span></button>
-    <button type="button" id="tab-roster" aria-pressed="false"><span class="lbl">Roster</span></button>
-    <button type="button" id="tab-stats" aria-pressed="false"><span class="lbl">Stats</span></button>
-    <button type="button" id="tab-verify" aria-pressed="false"><span class="lbl">Verify</span></button>
-  </div>
-
-  <section class="view" id="view-stats" hidden>
-    <div class="seg" id="s-period" role="group" aria-label="Period">
-      <button type="button" data-p="sofar" aria-pressed="true"><span class="lbl">So far</span><span class="sub" id="s-sofar"></span></button>
-      <button type="button" data-p="all" aria-pressed="false"><span class="lbl">Whole roster</span><span class="sub" id="s-all"></span></button>
-    </div>
-    <div class="today">
-      <div class="srow">
-        <label class="k" for="s-person">Duty split for</label>
-        <select id="s-person"></select>
-      </div>
-      <div class="pie">
-        <svg id="s-pie" viewBox="0 0 200 200" role="img" aria-labelledby="s-pie-t"><title id="s-pie-t">Duty split</title></svg>
-        <div class="plegend" id="s-legend"></div>
-      </div>
-      <div class="note" id="s-extra"></div>
-    </div>
-    <div class="grp">Team count</div>
-    <div class="tablebox"><table class="stab" id="s-table"></table></div>
-    <div class="grp">Change log</div>
-    <div class="cl" id="s-log"></div>
-    <div class="note">Counts use the roster with every logged change applied. Tell Claude in chat about any change (swap, extra duty, call-in, leave) and it is logged here.</div>
-  </section>
-
-  <section class="view" id="view-roster" hidden>
-    <div class="today" id="r-today"><div class="k">Loading roster…</div></div>
-    <div class="legend">
-      <span><i style="background:var(--am)"></i>Morning</span>
-      <span><i style="background:var(--pm)"></i>Evening</span>
-      <span><i style="background:var(--nt)"></i>Night</span>
-      <span><span class="tag t2">T2</span> Terminal 2</span>
-      <span><span class="chg"></span> Changed</span>
-    </div>
-    <div class="rbox" id="r-box"><table id="r-table"></table></div>
-    <div class="note" id="r-src"></div>
-    <div class="note">Scroll sideways for more dates. Today's column is outlined. Your name is underlined.</div>
-  </section>
-
   <section class="view" id="view-ba">
   <div class="seg" id="days" role="group" aria-label="Day the shift starts"></div>
   <div class="seg" id="shifts" role="group" aria-label="Shift"></div>
 
   <div class="prog" id="prog" hidden></div>
   <div class="next" id="next" hidden></div>
-  <div class="sumrow"><div class="summary" id="summary"></div><button class="btn alertbtn" id="alerts" type="button" aria-pressed="false">Alerts off</button></div>
+  <div class="sumrow"><div class="summary" id="summary"></div><div class="btns"><button class="btn alertbtn" id="cockpit" type="button" aria-pressed="false">Cockpit only</button><button class="btn alertbtn" id="alerts" type="button" aria-pressed="false">Alerts off</button></div></div>
   <div class="csearch" id="csearch" hidden>
     <input id="cq" type="search" placeholder="Find crew by name or flight" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Find crew by name or flight number">
     <div class="cres" id="cres" role="list" hidden></div>
@@ -390,21 +253,9 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
   <div class="note" id="status"></div>
   <div class="note">Tap a row to tick its BA off; tap again to undo. Rows cross out by themselves at departure.</div>
   <div class="note"><button class="linkbtn" id="cs-open" type="button">Crew list: checking…</button></div>
-  <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. No names are shown in alerts. <span class="webonly">In the browser they work only while this app is open. For alerts with the phone locked, install the <a href="https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk">Android app</a>.</span><span class="nativeonly">In this Android app they also come when the app is closed or the phone is locked. Open the app at the start of each duty so it can set the alerts for that shift.</span></div>
+  <div class="note">Alerts (when switched on): 5 minutes before crew report for a flight in the current shift, and when someone is still not ticked 15 minutes after their report time. No names are shown in alerts. With <b>Cockpit only</b> on, alerts and red late marks are for pilots only, and a flight is done when its pilots are ticked. <span class="webonly">In the browser they work only while this app is open. For alerts with the phone locked, install the <a href="https://github.com/adityamrv/blr-duty-board/releases/download/android-app/duty-board.apk">Android app</a>.</span><span class="nativeonly">In this Android app they also come when the app is closed or the phone is locked. Open the app at the start of each duty so it can set the alerts for that shift.</span></div>
   <div class="note"><button class="linkbtn" id="alert-test" type="button">Send a test alert in 1 minute</button></div>
   <div class="note">BA (breath analyser) report time = STD (scheduled time of departure) minus 1 h 15 min. A flight is in a shift when its BA time falls inside duty hours. Scheduled times from FlightStats, updated every 3 hours; delays are not shown.</div>
-  </section>
-  <section class="view" id="view-verify" hidden>
-    <div class="vhead">
-      <div>
-        <div class="k">Verification · full day</div>
-        <div class="n" id="v-count"></div>
-        <div class="m" id="v-since"></div>
-      </div>
-      <button class="btn" id="v-reset" type="button">Reset</button>
-    </div>
-    <div id="v-groups" class="view"></div>
-    <div class="note">Tap a station to open its checklist. Red: not done. Orange: blank test, registers and Excel sheet ticked, verification still open. Green: all four ticked. Ticks stay on this phone until you press Reset (tap it twice).</div>
   </section>
 </div>
 
@@ -510,6 +361,10 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
   // IFM in-flight manager, CC1 / CC2 cabin crew. Tag is STANDBY, TRAVEL or DEADHEAD when the person is not operating the flight.
   const RANKS = ["CP","SPFO","FO","IFM","SCC","CC1","CC2","TCC"];   // SPFO, SCC, TCC also appear in the roster
   const PILOTS = ["CP","SPFO","FO"];
+  // Cockpit only (switch next to Alerts, remembered on the phone): only pilots count for alerts, late (red) marks
+  // and the flight being done; cabin crew stay listed and can still be ticked.
+  let cockpitOnly = lsGet("cockpitOnly",false)===true;
+  const counts = p => !cockpitOnly || PILOTS.includes(p[0]);
   const rankPos = r => { const i=RANKS.indexOf(r); return i<0 ? RANKS.length : i; };
   const peopleOf = c => !c || !c.crew ? [] : c.crew.slice().sort((a,b)=>rankPos(a[0])-rankPos(b[0]));
   const pid = p => p[0]+"|"+p[1];
@@ -522,7 +377,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     if(on) (tickMap[k]||(tickMap[k]={}))[id]=Date.now();
     else Object.keys(tickMap).forEach(x=>{ if(x.slice(0,10)===d && tickMap[x]) delete tickMap[x][id]; });
   }
-  const crewAllTicked = f => { const people=peopleOf(crewMap[cKey(f)]); return people.length>0 && tickedCount(cKey(f),people)===people.length; };
+  const crewAllTicked = f => { const people=peopleOf(crewMap[cKey(f)]).filter(counts); return people.length>0 && tickedCount(cKey(f),people)===people.length; };
   // when a person is due: own report time, else the flight's BA time
   function dueMs(p,f,dayBase){
     if(!p[2]) return f ? f.baMs : null;
@@ -929,7 +784,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
       const open = openKey===ck && now<openUntil, baT=f?hhmm(f.baMs):"";
       // late = not ticked 15 min after the person's report time. Not counted once the flight is done or departed,
       // or when the person reported before this shift began (the earlier shift's test).
-      const isLate=p=>{ if((f && isDone(f)) || isTicked(ck,p)) return false; const d=dueMs(p,f,dayBase); return d!==null && d>=win.start && now>d+OVERDUE_MS; };
+      const isLate=p=>{ if(!counts(p) || (f && isDone(f)) || isTicked(ck,p)) return false; const d=dueMs(p,f,dayBase); return d!==null && d>=win.start && now>d+OVERDUE_MS; };
       const anyLate=people.some(isLate);
       cr.className="crewrow"+(hl?" hl":"")+(anyLate?" late":"");
       cc.colSpan=4; cb.type="button"; cb.className="crewbtn";
@@ -972,7 +827,7 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
             b.addEventListener("click",()=>{
               setTick(ck,p,!on);
               // every box ticked = flight done (crossed out, see isDone); unticking one brings the flight back
-              if(f && tickedCount(ck,people)!==people.length) delete doneMap[fKey(f)];
+              const cnt=people.filter(counts); if(f && tickedCount(ck,cnt)!==cnt.length) delete doneMap[fKey(f)];
               saveCrew(); saveDone(); keepOpen(ck); render();
             });
             col.appendChild(b);
@@ -1097,12 +952,14 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     const win=shiftWindow(0,autoPick().shift), {out}=flightsFor(win), ev=[];
     const scan=(ck,label,people,f,dayBase)=>{
       const dues={};   // report time -> people due then
+      const all=people; people=people.filter(counts);
+      if(all.length && !people.length) return;   // cockpit only: no pilots in this list (e.g. cabin standby)
       if(people.length) people.forEach(p=>{ const d=dueMs(p,f,dayBase); if(d!==null && d>=win.start && d<win.end+BA_MS) (dues[d]||(dues[d]=[])).push(p); });
       else if(f) dues[f.baMs]=[];
       Object.keys(dues).forEach(k=>{
         const d=Number(k), grp=dues[k], pending=grp.filter(p=>!isTicked(ck,p));
         if(grp.length && !pending.length) return;
-        const who = grp.length ? pending.length+" crew" : "crew";
+        const who = grp.length ? pending.length+(cockpitOnly?" cockpit":"")+" crew" : (cockpitOnly?"cockpit crew":"crew");
         ev.push({key:"soon|"+ck+"|"+d, kind:"soon", due:d, at:d-5*60000, text:label+": "+who+" report at "+hhmm(d)});
         ev.push({key:"late|"+ck+"|"+d, kind:"late", due:d, at:d+OVERDUE_MS, text:label+": "+who+" not ticked, 15 min past report time "+hhmm(d)});
       });
@@ -1180,6 +1037,9 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
     document.documentElement.classList.add("native");
     if(alertsOn) nativeSetup(false);
   }
+  function renderCockpitBtn(){ const b=$("cockpit"); b.setAttribute("aria-pressed",String(cockpitOnly)); b.textContent=cockpitOnly?"Cockpit only ✓":"Cockpit only"; }
+  $("cockpit").addEventListener("click",()=>{ cockpitOnly=!cockpitOnly; lsSet("cockpitOnly",cockpitOnly); renderCockpitBtn(); render(); checkAlerts(); });
+  renderCockpitBtn();
   alertsReady = true;
   renderAlertBtn(); setInterval(checkAlerts,20000);
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ renderAlertBtn(); checkAlerts(); } });
@@ -1401,266 +1261,6 @@ tr.crewrow.found td{box-shadow:inset 3px 0 0 var(--accent)}
   document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("bapos").hidden) $("bapos-close").click(); });
 
   tickTimer(); setInterval(tickTimer, 500);
-})();
-</script>
-<script>
-(function(){
-  // ---------- Verify tab: full-day station verification checklist, kept on this phone until Reset ----------
-  const $ = id => document.getElementById(id);
-  const GROUPS = [["BLR"],["BOM"],["DEL","AYJ","LKO","VNS"],["AMD","GOP","IXD"],["SXR"],["IXB","CCU"],["GAU"],["IXA"],
-    ["BBI","DBR","DIB"],["PNQ","GOX","GWL"],["HYD","CCJ"],["MAA","VTZ"],["COK"],["IXZ"],["NMI"],["DXN","JAI","UDR"]];
-  const CITY = {BLR:"Bengaluru",BOM:"Mumbai",DEL:"Delhi",AYJ:"Ayodhya",LKO:"Lucknow",VNS:"Varanasi",AMD:"Ahmedabad",
-    GOP:"Gorakhpur",IXD:"Prayagraj",SXR:"Srinagar",IXB:"Bagdogra",CCU:"Kolkata",GAU:"Guwahati",IXA:"Agartala",
-    BBI:"Bhubaneswar",DBR:"Darbhanga",DIB:"Dibrugarh",PNQ:"Pune",GOX:"Goa Mopa",GWL:"Gwalior",HYD:"Hyderabad",
-    CCJ:"Kozhikode",MAA:"Chennai",VTZ:"Visakhapatnam",COK:"Kochi",IXZ:"Sri Vijaya Puram",NMI:"Navi Mumbai",
-    DXN:"Noida",JAI:"Jaipur",UDR:"Udaipur"};
-  const ITEMS = [["blank","Blank test"],["reg","Registers"],["xls","Excel sheet"],["ver","Verification"]];
-  const KEY = "verifyChecks", KEY_T = "verifyResetAt";
-  let V = {}; try{ V = JSON.parse(localStorage.getItem(KEY)||"{}")||{}; }catch(e){ V = {}; }
-  const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(V)); }catch(e){} };
-  // green = all four; orange = first three without verification; red = anything else
-  const state = c => { const x = V[c]||{}; if(x.blank && x.reg && x.xls) return x.ver ? "gr" : "or"; return ""; };
-  const ticks = c => ITEMS.filter(([k])=>(V[c]||{})[k]).length;
-  const open = new Set();
-
-  function head(){
-    const all = GROUPS.flat(); let g=0,o=0;
-    all.forEach(c=>{ const s=state(c); if(s==="gr") g++; else if(s==="or") o++; });
-    $("v-count").innerHTML = '<span class="g">'+g+' green</span> · <span class="o">'+o+' orange</span> · <span class="r">'+(all.length-g-o)+' red</span>';
-    let t=null; try{ t=localStorage.getItem(KEY_T); }catch(e){}
-    $("v-since").textContent = t ? "Since reset: "+new Date(+t).toLocaleString("en-IN",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}) : "";
-  }
-  function paint(c){
-    const el = document.querySelector('.vst[data-c="'+c+'"]'); if(!el) return;
-    el.className = ("vst "+state(c)).trim();
-    el.querySelector(".cnt").textContent = ticks(c)+"/4";
-  }
-  function build(){
-    let h = "";
-    GROUPS.forEach((grp,i)=>{
-      h += '<div class="vgrp"><div class="h">'+(i+1)+' · '+grp.join(" / ")+'</div>';
-      grp.forEach(c=>{
-        h += '<details class="'+("vst "+state(c)).trim()+'" data-c="'+c+'"'+(open.has(c)?' open':'')+'><summary><span class="c">'+c+'</span><span class="city">'+(CITY[c]||"")+
-          '</span><span class="cnt">'+ticks(c)+'/4</span><span class="ar">▸</span></summary><div class="list">';
-        ITEMS.forEach(([k,l])=>{ h += '<label><input type="checkbox" data-k="'+k+'"'+((V[c]||{})[k]?' checked':'')+'>'+l+'</label>'; });
-        h += '</div></details>';
-      });
-      h += '</div>';
-    });
-    $("v-groups").innerHTML = h;
-    document.querySelectorAll(".vst").forEach(d=>{
-      const c = d.dataset.c;
-      d.addEventListener("toggle",()=>{ if(d.open) open.add(c); else open.delete(c); });
-      d.querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{
-        V[c] = V[c]||{}; V[c][inp.dataset.k] = inp.checked; save(); paint(c); head();
-      }));
-    });
-    head();
-  }
-  // Reset needs two taps within 4 s, so one stray tap cannot wipe the list
-  let armed = null;
-  $("v-reset").addEventListener("click",()=>{
-    const b = $("v-reset");
-    if(!armed){ b.textContent="Tap again to reset"; b.classList.add("arm"); armed=setTimeout(()=>{ armed=null; b.textContent="Reset"; b.classList.remove("arm"); },4000); return; }
-    clearTimeout(armed); armed=null; b.textContent="Reset"; b.classList.remove("arm");
-    V = {}; save(); open.clear();
-    try{ localStorage.setItem(KEY_T, String(Date.now())); }catch(e){}
-    build();
-  });
-  build();
-})();
-</script>
-<script>
-(function(){
-  // ---------- Tabs + duty roster (roster.json: raw cell text from the official roster, per person per date) ----------
-  const $ = id => document.getElementById(id);
-  const IST_MS = 330*60000;
-  let R = null, offline = false, scrolled = false;
-
-  // tabs, last choice remembered on this phone
-  const TABS=["ba","roster","stats","verify"];
-  function showTab(t){
-    TABS.forEach(k=>{ $("view-"+k).hidden = t!==k; $("tab-"+k).setAttribute("aria-pressed",String(t===k)); });
-    try{ localStorage.setItem("tab",t); }catch(e){}
-    if(t==="roster") scrolled=false;
-    if(t!=="ba") render();
-  }
-  TABS.forEach(k=>$("tab-"+k).addEventListener("click",()=>showTab(k)));
-
-  // the roster as worked: the uploaded cell, replaced by the latest logged change for that person and date
-  const changesFor = (iso,n) => (R.changes||[]).filter(c=>c.date===iso && c.name===n);
-  function cellOf(iso,n){ const ch=changesFor(iso,n); if(ch.length) return ch[ch.length-1].to; const d=R.days[iso]; return d ? d[n] : undefined; }
-
-  const isoIST = off => new Date(Date.now()+IST_MS+off*86400000).toISOString().slice(0,10);
-  const dayLbl = iso => new Date(iso+"T00:00:00Z").toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short",day:"numeric",month:"short"});
-  const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-  // read one roster cell: "T2 0600-1430", "1330-2200", "2200-0630", "O", "leave", "comp off", "PH", "DEL"...
-  const STD = {am:["0600-1430","0630-1500"], pm:["1330-2200"], nt:["2200-0630"]};
-  function parse(raw){
-    let v=String(raw||"").trim(); if(!v) return null;
-    let t2=false; if(/^t2/i.test(v)){ t2=true; v=v.replace(/^t2[\s\-]*/i,""); }
-    const m=v.match(/^(\d{4})\s*-\s*(\d{4})$/);
-    if(m){
-      const s=+m[1], time=m[1]+"-"+m[2];
-      const slot = (s>=2000||s<400) ? "nt" : s>=1200 ? "pm" : "am";
-      return {slot, t2, time, odd: !STD[slot].includes(time)};
-    }
-    return {slot:"off", label: /^o$/i.test(v) ? "" : v};
-  }
-  const SLOTNAME = {am:"Morning", pm:"Evening", nt:"Night"};
-
-  function name(p, c){
-    let h=(p.role==="doctor"?"Dr ":"")+esc(p.n);
-    if(R && p.n===R.me) h='<span class="me">'+h+'</span>';
-    if(c && c.t2) h='<span class="tag t2">T2</span> '+h;
-    if(c && c.odd) h+=' <span class="sub">'+c.time+'</span>';
-    if(c && c.label) h+=' <span class="sub">'+esc(c.label)+'</span>';
-    if(c && c.chg) h+='<span class="chg" title="Changed"></span>';
-    return h;
-  }
-  function slots(iso){
-    const day=R.days[iso]; if(!day) return null;
-    const c={am:{doctor:[],staff:[],admin:[],t2:[]},pm:{doctor:[],staff:[],admin:[],t2:[]},nt:{doctor:[],staff:[],admin:[],t2:[]},off:[]};
-    R.people.forEach(p=>{
-      const x=parse(cellOf(iso,p.n)); if(!x) return;
-      if(changesFor(iso,p.n).length) x.chg=true;
-      if(x.slot==="off"){ c.off.push(name(p,x)); return; }
-      if(x.t2) c[x.slot].t2.push(name(p,x)); else c[x.slot][p.role].push(name(p,x));
-    });
-    return c;
-  }
-
-  function renderToday(){
-    const el=$("r-today"), today=isoIST(0), tom=isoIST(1);
-    const card=(lbl,iso)=>{
-      const x=R.days[iso]?parse(cellOf(iso,R.me)):null;
-      let big="Not in roster", small="", cls="";
-      if(x && x.slot==="off"){ big=x.label||"Off"; }
-      else if(x){ big=SLOTNAME[x.slot]+(x.t2?" · T2":""); small=x.time; cls=x.slot; }
-      return '<div class="c '+cls+'"><div class="d">'+lbl+' · '+dayLbl(iso)+'</div><div class="s">'+esc(big)+'</div>'+(small?'<div class="d">'+small+'</div>':'')+'</div>';
-    };
-    let h='<div class="k">Your shift</div><div class="mine">'+card("Today",today)+card("Tomorrow",tom)+'</div>';
-    const c=slots(today);
-    if(c){
-      const line=(k,t)=>{ const a=c[k], ppl=[...a.doctor,...a.staff,...a.admin,...a.t2]; return '<span class="t '+k+'">'+t+'</span><span>'+(ppl.join(", ")||"—")+'</span>'; };
-      h+='<div class="k">On duty today</div><div class="crew">'+line("am","Morning")+line("pm","Evening")+line("nt","Night")+'</div>';
-    } else {
-      const ds=Object.keys(R.days).sort();
-      h+='<div class="note">No roster saved for today'+(ds.length?' (saved: '+dayLbl(ds[0])+' – '+dayLbl(ds[ds.length-1])+')':'')+'.</div>';
-    }
-    el.innerHTML=h;
-  }
-
-  function renderGrid(){
-    const ds=Object.keys(R.days).sort(), today=isoIST(0), C=ds.map(slots);
-    let h='<thead><tr><th class="corner"></th>'+ds.map(iso=>{
-      const d=new Date(iso+"T00:00:00Z"), dow=d.getUTCDay(), we=dow===0||dow===6;
-      return '<th class="'+(we?"we ":"")+(iso===today?"now":"")+'" data-iso="'+iso+'">'+d.toLocaleDateString("en-GB",{timeZone:"UTC",weekday:"short"})+'<b>'+d.getUTCDate()+' '+d.toLocaleDateString("en-GB",{timeZone:"UTC",month:"short"})+'</b></th>';
-    }).join("")+'</tr></thead><tbody>';
-    const ROWS=[["h","am","Morning"],["r","am","Doctor","doctor"],["r","am","Staff","staff"],["r","am","Admin","admin"],["r","am","Terminal 2","t2"],
-                ["h","pm","Evening"],["r","pm","Doctor","doctor"],["r","pm","Staff","staff"],["r","pm","Admin","admin"],["r","pm","Terminal 2","t2"],
-                ["h","nt","Night"],["r","nt","Doctor","doctor"],["r","nt","Staff","staff"],
-                ["h","off","Off / away"],["r","off","",null]];
-    ROWS.forEach(([kind,k,label,key])=>{
-      if(kind==="h"){ h+='<tr class="h-'+k+'"><td class="sh">'+label+'</td>'+ds.map(()=>"<td></td>").join("")+'</tr>'; return; }
-      if(k==="pm"&&key==="t2"&&!C.some(c=>c.pm.t2.length)) return;
-      h+='<tr class="'+k+'"><td class="lab">'+label+'</td>'+ds.map((iso,i)=>{
-        const v = key ? C[i][k][key] : C[i].off, now=iso===today?" now":"";
-        if(!v.length){
-          const cover = key==="staff" && k!=="nt" && C[i][k].admin.length;
-          return '<td class="v dash'+now+'">—'+(cover?'<span class="sub blk">admin covers</span>':'')+'</td>';
-        }
-        return '<td class="v'+now+'">'+v.join("<br>")+'</td>';
-      }).join("")+'</tr>';
-    });
-    $("r-table").innerHTML=h+'</tbody>';
-    if(!scrolled){   // open at today (or the nearest saved date)
-      const box=$("r-box"), ths=[...box.querySelectorAll("thead th[data-iso]")];
-      const t=ths.find(th=>th.dataset.iso>=today) || ths[ths.length-1];
-      if(t && box.offsetParent){ box.scrollLeft=Math.max(0,t.getBoundingClientRect().left-ths[0].getBoundingClientRect().left); scrolled=true; }
-    }
-    const u=R.updatedAt?Date.parse(R.updatedAt):null;
-    $("r-src").textContent=(ds.length?dayLbl(ds[0])+" – "+dayLbl(ds[ds.length-1]):"")+(R.source?" · "+R.source:"")+(u?" · Updated "+new Date(u+IST_MS).toLocaleDateString("en-GB",{timeZone:"UTC",day:"numeric",month:"short"}):"")+(offline?" · Offline copy":"");
-  }
-
-  // ---------- Stats: duty split per person (pie), team counts, change log ----------
-  const CATS=[["am","Morning","var(--am)"],["pm","Evening","var(--pm)"],["nt","Night","var(--nt)"],["off","Off","var(--muted)"],["lv","Leave","#3DBE7A"],["oth","Other (DEL)","#B08A63"]];
-  let period="sofar", person=null;
-  function catOf(x){ if(!x) return null; if(x.slot!=="off") return x.slot; if(!x.label) return "off"; return /^(leave|comp\s*off|ph)$/i.test(x.label) ? "lv" : "oth"; }
-  function countsFor(n, ds){
-    const k={am:0,pm:0,nt:0,off:0,lv:0,oth:0,t2:0,chg:0};
-    ds.forEach(iso=>{ const x=parse(cellOf(iso,n)), c=catOf(x); if(!c) return; k[c]++; if(x.t2) k.t2++; if(changesFor(iso,n).length) k.chg++; });
-    return k;
-  }
-  function arc(cx,cy,r,a0,a1){
-    const p=a=>[cx+r*Math.sin(a), cy-r*Math.cos(a)];
-    if(a1-a0>=2*Math.PI-1e-6) return "M"+cx+","+(cy-r)+"A"+r+","+r+" 0 1 1 "+(cx-0.01)+","+(cy-r)+"Z";
-    const [x0,y0]=p(a0),[x1,y1]=p(a1);
-    return "M"+cx+","+cy+"L"+x0.toFixed(2)+","+y0.toFixed(2)+"A"+r+","+r+" 0 "+(a1-a0>Math.PI?1:0)+" 1 "+x1.toFixed(2)+","+y1.toFixed(2)+"Z";
-  }
-  function renderStats(){
-    const all=Object.keys(R.days).sort(), today=isoIST(0), sofar=all.filter(d=>d<=today);
-    const ds = period==="sofar" ? sofar : all;
-    $("s-sofar").textContent = sofar.length ? dayLbl(sofar[0]).slice(4)+" – "+dayLbl(sofar[sofar.length-1]).slice(4) : "none yet";
-    $("s-all").textContent = all.length ? dayLbl(all[0]).slice(4)+" – "+dayLbl(all[all.length-1]).slice(4) : "";
-    document.querySelectorAll("#s-period button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.p===period)));
-    const sel=$("s-person");
-    if(!sel.options.length){
-      R.people.forEach(p=>{ const o=document.createElement("option"); o.value=p.n; o.textContent=(p.role==="doctor"?"Dr ":"")+p.n+(p.n===R.me?" (you)":""); sel.appendChild(o); });
-      sel.addEventListener("change",()=>{ person=sel.value; renderStats(); });
-    }
-    if(!person) person=R.me; sel.value=person;
-    // pie
-    const k=countsFor(person, ds), shown=CATS.filter(c=>k[c[0]]>0), tot=shown.reduce((s,c)=>s+k[c[0]],0);
-    let a=0, svg='<title id="s-pie-t">Duty split for '+esc(person)+'</title>';
-    shown.forEach(([id,lbl,col])=>{
-      const a1=a+2*Math.PI*k[id]/tot;
-      svg+='<path d="'+arc(100,100,96,a,a1)+'" style="fill:'+col+'"><title>'+lbl+': '+k[id]+' of '+tot+' days</title></path>'; a=a1;
-    });
-    const duty=k.am+k.pm+k.nt;
-    svg+='<circle cx="100" cy="100" r="54" style="fill:var(--surface)"/><text class="ctr" x="100" y="104" text-anchor="middle">'+duty+'</text><text class="ctr2" x="100" y="124" text-anchor="middle">duties</text>';
-    $("s-pie").innerHTML = tot ? svg : '<text x="100" y="105" text-anchor="middle" style="fill:var(--muted);font-size:13px">No days in this period</text>';
-    $("s-legend").innerHTML = CATS.map(([id,lbl,col])=>'<div><i style="background:'+col+'"></i>'+lbl+'<b>'+k[id]+'</b><span class="p">'+(tot?Math.round(100*k[id]/tot)+"%":"")+'</span></div>').join("");
-    $("s-extra").textContent = ds.length+" days · Leave includes comp off and PH · Terminal 2 duties: "+k.t2+(k.chg?" · changed days: "+k.chg:"");
-    // team table
-    let h='<thead><tr><th>Name</th><th>Morn</th><th>Eve</th><th>Night</th><th>T2</th><th>Off</th><th>Leave</th></tr></thead><tbody>';
-    R.people.forEach(p=>{
-      const c=countsFor(p.n, ds), td=v=>'<td'+(v?'':' class="z"')+'>'+v+'</td>';
-      h+='<tr class="'+(p.n===person?"sel":"")+'" data-n="'+esc(p.n)+'"><td>'+(p.role==="doctor"?"Dr ":"")+esc(p.n)+'</td>'+td(c.am)+td(c.pm)+td(c.nt)+td(c.t2)+td(c.off)+td(c.lv+c.oth)+'</tr>';
-    });
-    $("s-table").innerHTML=h+'</tbody>';
-    $("s-table").querySelectorAll("tbody tr").forEach(tr=>{ tr.style.cursor="pointer"; tr.addEventListener("click",()=>{ person=tr.dataset.n; renderStats(); window.scrollTo({top:0,behavior:"smooth"}); }); });
-    // change log, newest first
-    const log=(R.changes||[]).slice().reverse();
-    const show=v=>{ const x=parse(v); if(!x) return "—"; if(x.slot==="off") return x.label||"Off"; return (x.t2?"T2 ":"")+SLOTNAME[x.slot]+" "+x.time; };
-    $("s-log").innerHTML = log.length ? log.map(c=>{
-      const p=R.people.find(q=>q.n===c.name)||{n:c.name};
-      return '<div class="logi"><div class="w">'+dayLbl(c.date)+' · '+(p.role==="doctor"?"Dr ":"")+esc(c.name)+'</div><div>'+esc(show(c.from))+' → <b>'+esc(show(c.to))+'</b>'+(c.note?' · '+esc(c.note):'')+'</div>'+(c.logged?'<div class="m">Logged '+esc(c.logged.replace("T"," ").slice(0,16))+'</div>':'')+'</div>';
-    }).join("") : '<div class="logi m">No changes logged yet.</div>';
-  }
-  document.querySelectorAll("#s-period button").forEach(b=>b.addEventListener("click",()=>{ period=b.dataset.p; renderStats(); }));
-
-  function render(){ if(!R) return; renderToday(); if(!$("view-roster").hidden) renderGrid(); if(!$("view-stats").hidden) renderStats(); }
-  async function load(){
-    try{
-      const res=await fetch("roster.json?t="+Date.now(),{cache:"no-store"});
-      if(!res.ok) throw new Error(res.status);
-      R=await res.json(); offline=false;
-      try{ localStorage.setItem("lastRoster",JSON.stringify(R)); }catch(e){}
-    }catch(e){
-      offline=true;
-      if(!R){ try{ R=JSON.parse(localStorage.getItem("lastRoster")||"null"); }catch(_){} }
-      if(!R){ $("r-today").innerHTML='<div class="k">Roster</div><div class="note bad">Could not load the roster. Connect to the internet and open this tab again.</div>'; return; }
-    }
-    render();
-  }
-  let t0="ba"; try{ t0=localStorage.getItem("tab")||"ba"; }catch(e){}
-  showTab(["ba","roster","stats","verify"].includes(t0)?t0:"ba");
-  load();
-  $("refresh").addEventListener("click",load);
-  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") load(); });
-  setInterval(render, 60000);
 })();
 </script>
 </body>
